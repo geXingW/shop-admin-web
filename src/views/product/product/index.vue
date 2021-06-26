@@ -1,30 +1,8 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <!--侧边部门数据-->
-      <el-col :xs="9" :sm="6" :md="5" :lg="4" :xl="4">
-        <div class="head-container">
-          <el-input
-            v-model="deptName"
-            clearable
-            size="small"
-            placeholder="输入部门名称搜索"
-            prefix-icon="el-icon-search"
-            class="filter-item"
-            @input="getDeptDatas"
-          />
-        </div>
-        <el-tree
-          :data="deptDatas"
-          :load="getDeptDatas"
-          :props="defaultProps"
-          :expand-on-click-node="false"
-          lazy
-          @node-click="handleNodeClick"
-        />
-      </el-col>
       <!--用户数据-->
-      <el-col :xs="15" :sm="18" :md="19" :lg="20" :xl="20">
+      <el-col>
         <!--工具栏-->
         <div class="head-container">
           <div v-if="crud.props.searchToggle">
@@ -39,101 +17,13 @@
               @keyup.enter.native="crud.toQuery"
             />
             <date-range-picker v-model="query.createTime" class="date-item" />
-            <el-select
-              v-model="query.enabled"
-              clearable
-              size="small"
-              placeholder="状态"
-              class="filter-item"
-              style="width: 90px"
-              @change="crud.toQuery"
-            >
-              <el-option
-                v-for="item in enabledTypeOptions"
-                :key="item.key"
-                :label="item.display_name"
-                :value="item.key"
-              />
-            </el-select>
             <rrOperation />
           </div>
           <crudOperation show="" :permission="permission" />
         </div>
         <!--表单渲染-->
         <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
-          <el-form ref="form" :inline="true" :model="form" :rules="rules" size="small" label-width="66px">
-            <el-form-item label="用户名" prop="username">
-              <el-input v-model="form.username" />
-            </el-form-item>
-            <el-form-item label="电话" prop="phone">
-              <el-input v-model.number="form.phone" />
-            </el-form-item>
-            <el-form-item label="昵称" prop="nickName">
-              <el-input v-model="form.nickName" />
-            </el-form-item>
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" />
-            </el-form-item>
-            <el-form-item label="部门" prop="dept.id">
-              <treeselect
-                v-model="form.dept.id"
-                :options="depts"
-                :load-options="loadDepts"
-                style="width: 178px"
-                placeholder="选择部门"
-              />
-            </el-form-item>
-            <el-form-item label="岗位" prop="jobs">
-              <el-select
-                v-model="jobDatas"
-                style="width: 178px"
-                multiple
-                placeholder="请选择"
-                @remove-tag="deleteTag"
-                @change="changeJob"
-              >
-                <el-option
-                  v-for="item in jobs"
-                  :key="item.name"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="性别">
-              <el-radio-group v-model="form.gender" style="width: 178px">
-                <el-radio label="M">男</el-radio>
-                <el-radio label="F">女</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.enabled" :disabled="form.id === user.id">
-                <el-radio
-                  v-for="item in dict.user_status"
-                  :key="item.id"
-                  :label="item.value"
-                >{{ item.label }}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item style="margin-bottom: 0;" label="角色" prop="roles">
-              <el-select
-                v-model="roleDatas"
-                style="width: 437px"
-                multiple
-                placeholder="请选择"
-                @remove-tag="deleteTag"
-                @change="changeRole"
-              >
-                <el-option
-                  v-for="item in roles"
-                  :key="item.id"
-                  :disabled="level !== 1 && item.level <= level"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-form>
+
           <div slot="footer" class="dialog-footer">
             <el-button type="text" @click="crud.cancelCU">取消</el-button>
             <el-button :loading="crud.status.cu === 2" type="primary" @click="crud.submitCU">确认</el-button>
@@ -142,31 +32,13 @@
         <!--表格渲染-->
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column :show-overflow-tooltip="true" prop="username" label="用户名" />
-          <el-table-column :show-overflow-tooltip="true" prop="nickName" label="昵称" />
-          <el-table-column prop="gender" label="性别">
-            <template slot-scope="scope">
-              {{ scope.row.gender == "F" ? "女": "男" }}
-            </template>
-          </el-table-column>
-          <el-table-column :show-overflow-tooltip="true" prop="phone" width="100" label="电话" />
-          <el-table-column :show-overflow-tooltip="true" width="135" prop="email" label="邮箱" />
-          <el-table-column :show-overflow-tooltip="true" prop="dept" label="部门">
-            <template slot-scope="scope">
-              <div>{{ scope.row.dept.name }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" align="center" prop="enabled">
-            <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.enabled"
-                :disabled="user.id === scope.row.id"
-                active-color="#409EFF"
-                inactive-color="#F56C6C"
-                @change="changeEnabled(scope.row, scope.row.enabled)"
-              />
-            </template>
-          </el-table-column>
+          <el-table-column :show-overflow-tooltip="true" prop="name" label="商品名" />
+          <!-- 品牌 -->
+          <el-table-column label="品牌"><template>小米</template></el-table-column>
+          <!-- 分类 -->
+          <el-table-column label="分类"><template>手机</template></el-table-column>
+          <!-- 图片 -->
+          <el-table-column label="商品图片"><template>手机</template></el-table-column>
           <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期" />
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
@@ -192,7 +64,7 @@
 </template>
 
 <script>
-import curdAdmin from '@/api/system/admin'
+import curdProduct from '@/api/product/product'
 import { isvalidPhone } from '@/utils/validate'
 import { getDepts, getDeptSuperior } from '@/api/system/dept'
 import { getAll, getLevel } from '@/api/system/role'
@@ -209,12 +81,12 @@ import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
 let userRoles = []
 let userJobs = []
-const defaultForm = { id: null, username: null, nickName: null, gender: 'M', email: null, enabled: 'false', roles: [], jobs: [], dept: { id: null }, phone: null }
+const defaultForm = { id: null, name: null, price: 0, status: 0, category: { id : 0 } }
 export default {
   name: 'User',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker },
   cruds() {
-    return CRUD({ title: '用户', url: 'api/admin', crudMethod: { ...curdAdmin }})
+    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...curdProduct }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
@@ -240,10 +112,7 @@ export default {
         edit: ['admin', 'user:edit'],
         del: ['admin', 'user:del']
       },
-      enabledTypeOptions: [
-        { key: 1, display_name: '激活' },
-        { key: 0, display_name: '锁定' }
-      ],
+
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -301,63 +170,63 @@ export default {
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      this.getRoles()
-      if (form.id == null) {
-        this.getDepts()
-      } else {
-        this.getSupDepts(form.dept.id)
-      }
-      this.getRoleLevel()
-      this.getJobs()
-      form.enabled = form.enabled.toString()
+      // this.getRoles()
+      // if (form.id == null) {
+      //   this.getDepts()
+      // } else {
+      //   this.getSupDepts(form.dept.id)
+      // }
+      // this.getRoleLevel()
+      // this.getJobs()
+      // form.enabled = form.enabled.toString()
     },
     // 新增前将多选的值设置为空
     [CRUD.HOOK.beforeToAdd]() {
-      this.jobDatas = []
-      this.roleDatas = []
+      // this.jobDatas = []
+      // this.roleDatas = []
     },
     // 初始化编辑时候的角色与岗位
     [CRUD.HOOK.beforeToEdit](crud, form) {
-      this.getJobs(this.form.dept.id)
-      this.jobDatas = []
-      this.roleDatas = []
-      userRoles = []
-      userJobs = []
-      const _this = this
-      form.roles.forEach(function(role, index) {
-        _this.roleDatas.push(role.id)
-        const rol = { id: role.id }
-        userRoles.push(rol)
-      })
-      form.jobs.forEach(function(job, index) {
-        _this.jobDatas.push(job.id)
-        const data = { id: job.id }
-        userJobs.push(data)
-      })
+      // this.getJobs(this.form.dept.id)
+      // this.jobDatas = []
+      // this.roleDatas = []
+      // userRoles = []
+      // userJobs = []
+      // const _this = this
+      // form.roles.forEach(function(role, index) {
+      //   _this.roleDatas.push(role.id)
+      //   const rol = { id: role.id }
+      //   userRoles.push(rol)
+      // })
+      // form.jobs.forEach(function(job, index) {
+      //   _this.jobDatas.push(job.id)
+      //   const data = { id: job.id }
+      //   userJobs.push(data)
+      // })
     },
     // 提交前做的操作
     [CRUD.HOOK.afterValidateCU](crud) {
-      if (!crud.form.dept.id) {
-        this.$message({
-          message: '部门不能为空',
-          type: 'warning'
-        })
-        return false
-      } else if (this.jobDatas.length === 0) {
-        this.$message({
-          message: '岗位不能为空',
-          type: 'warning'
-        })
-        return false
-      } else if (this.roleDatas.length === 0) {
-        this.$message({
-          message: '角色不能为空',
-          type: 'warning'
-        })
-        return false
-      }
-      crud.form.roles = userRoles
-      crud.form.jobs = userJobs
+      // if (!crud.form.dept.id) {
+      //   this.$message({
+      //     message: '部门不能为空',
+      //     type: 'warning'
+      //   })
+      //   return false
+      // } else if (this.jobDatas.length === 0) {
+      //   this.$message({
+      //     message: '岗位不能为空',
+      //     type: 'warning'
+      //   })
+      //   return false
+      // } else if (this.roleDatas.length === 0) {
+      //   this.$message({
+      //     message: '角色不能为空',
+      //     type: 'warning'
+      //   })
+      //   return false
+      // }
+      // crud.form.roles = userRoles
+      // crud.form.jobs = userJobs
       return true
     },
     // 获取左侧部门数据
@@ -383,7 +252,7 @@ export default {
     },
     getDepts() {
       getDepts({ enabled: true }).then(({ data }) => {
-        this.depts = data.records.map(function(obj) {
+        this.depts = data.map(function(obj) {
           if (obj.hasChildren) {
             obj.children = null
           }
@@ -412,7 +281,7 @@ export default {
     loadDepts({ action, parentNode, callback }) {
       if (action === LOAD_CHILDREN_OPTIONS) {
         getDepts({ enabled: true, pid: parentNode.id }).then(res => {
-          parentNode.children = res.data.records.map(function(obj) {
+          parentNode.children = res.data.map(function(obj) {
             if (obj.hasChildren) {
               obj.children = null
             }
