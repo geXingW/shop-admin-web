@@ -9,11 +9,14 @@
           <div>
             <div style="text-align: center">
               <div class="el-upload">
-                <img :src="user.avatarName ? baseApi + '/avatar/' + user.avatarName : Avatar" title="点击上传头像" class="avatar" @click="toggleShow">
+                <img :src="user.avatarName" title="点击上传头像" class="avatar" @click="toggleShow">
+                <!--<img :src="user.avatarName ? baseApi + '/avatar/' + user.avatarName : Avatar" title="点击上传头像" class="avatar" @click="toggleShow">-->
                 <myUpload
                   v-model="show"
                   :headers="headers"
-                  :url="updateAvatarApi"
+                  :url="commonUploadUrl"
+                  :params="params"
+                  field="file"
                   @crop-upload-success="cropUploadSuccess"
                 />
               </div>
@@ -51,8 +54,8 @@
                 </el-form-item>
                 <el-form-item label="性别">
                   <el-radio-group v-model="form.gender" style="width: 178px">
-                    <el-radio label="男">男</el-radio>
-                    <el-radio label="女">女</el-radio>
+                    <el-radio label="M">男</el-radio>
+                    <el-radio label="F">女</el-radio>
                   </el-radio-group>
                 </el-form-item>
                 <el-form-item label="">
@@ -113,7 +116,7 @@ import { getToken } from '@/utils/auth'
 import store from '@/store'
 import { isvalidPhone } from '@/utils/validate'
 import crud from '@/mixins/crud'
-import { editUser } from '@/api/system/user'
+import { editUser } from '@/api/system/admin'
 import Avatar from '@/assets/images/avatar.png'
 export default {
   name: 'Center',
@@ -138,6 +141,10 @@ export default {
       headers: {
         'Authorization': getToken()
       },
+      params: {
+        upload_type: 'avatar',
+        upload_id: 0
+      },
       form: {},
       rules: {
         nickName: [
@@ -154,12 +161,14 @@ export default {
     ...mapGetters([
       'user',
       'updateAvatarApi',
-      'baseApi'
+      'baseApi',
+      'commonUploadUrl'
     ])
   },
   created() {
     this.form = { id: this.user.id, nickName: this.user.nickName, gender: this.user.gender, phone: this.user.phone }
     store.dispatch('GetInfo').then(() => {})
+    this.params.upload_id = this.user.id
   },
   methods: {
     toggleShow() {

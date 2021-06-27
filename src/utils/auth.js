@@ -4,7 +4,11 @@ import Config from '@/settings'
 const TokenKey = Config.TokenKey
 
 export function getToken() {
-  return Cookies.get(TokenKey)
+  let token = Cookies.get(TokenKey)
+  if (token) {
+    token = 'Bearer ' + token
+  }
+  return token
 }
 
 export function setToken(token, rememberMe) {

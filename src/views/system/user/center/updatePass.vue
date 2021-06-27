@@ -22,7 +22,8 @@
 
 <script>
 import store from '@/store'
-import { updatePass } from '@/api/system/user'
+import { editUser } from '@/api/system/admin'
+import { mapGetters } from 'vuex'
 export default {
   data() {
     const confirmPass = (rule, value, callback) => {
@@ -52,6 +53,11 @@ export default {
       }
     }
   },
+  computed: {
+    ...mapGetters([
+      'user'
+    ])
+  },
   methods: {
     cancel() {
       this.resetForm()
@@ -60,7 +66,8 @@ export default {
       this.$refs['form'].validate((valid) => {
         if (valid) {
           this.loading = true
-          updatePass(this.form).then(res => {
+          this.form.id = this.user.id
+          editUser(this.form).then(res => {
             this.resetForm()
             this.$notify({
               title: '密码修改成功，请重新登录',
