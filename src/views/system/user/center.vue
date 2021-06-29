@@ -9,12 +9,12 @@
           <div>
             <div style="text-align: center">
               <div class="el-upload">
-                <img :src="user.avatarName" title="点击上传头像" class="avatar" @click="toggleShow">
+                <img :src="user.avatar" title="点击上传头像" class="avatar" @click="toggleShow">
                 <!--<img :src="user.avatarName ? baseApi + '/avatar/' + user.avatarName : Avatar" title="点击上传头像" class="avatar" @click="toggleShow">-->
                 <myUpload
                   v-model="show"
                   :headers="headers"
-                  :url="commonUploadUrl"
+                  :url="avatarUploadUrl"
                   :params="params"
                   field="file"
                   @crop-upload-success="cropUploadSuccess"
@@ -142,8 +142,8 @@ export default {
         'Authorization': getToken()
       },
       params: {
-        upload_type: 'avatar',
-        upload_id: 0
+        uploadType: 'avatar',
+        uploadId: 0
       },
       form: {},
       rules: {
@@ -162,13 +162,13 @@ export default {
       'user',
       'updateAvatarApi',
       'baseApi',
-      'commonUploadUrl'
+      'avatarUploadUrl'
     ])
   },
   created() {
     this.form = { id: this.user.id, nickName: this.user.nickName, gender: this.user.gender, phone: this.user.phone }
     store.dispatch('GetInfo').then(() => {})
-    this.params.upload_id = this.user.id
+    this.params.uploadId = this.user.id
   },
   methods: {
     toggleShow() {

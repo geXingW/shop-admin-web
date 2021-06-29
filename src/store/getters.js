@@ -21,6 +21,7 @@ const getters = {
   sqlApi: state => state.api.sqlApi,
   swaggerApi: state => state.api.swaggerApi,
   commonUploadUrl: state => state.api.commonUploadUrl,
+  avatarUploadUrl: state => state.api.avatarUploadUrl,
   sidebarRouters: state => state.permission.sidebarRouters
 }
 export default getters

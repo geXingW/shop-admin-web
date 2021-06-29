@@ -25,7 +25,10 @@ const api = {
     baseApi: baseUrl,
 
     // 公共的上传接口
-    commonUploadUrl: commonUrl + '/upload'
+    commonUploadUrl: commonUrl + '/upload',
+
+    // 用户头像上传接口
+    avatarUploadUrl: '/api/admin/upload-avatar'
   }
 }
 
