@@ -28,7 +28,10 @@ const api = {
     commonUploadUrl: commonUrl + '/upload',
 
     // 用户头像上传接口
-    avatarUploadUrl: '/api/admin/upload-avatar'
+    avatarUploadUrl: '/api/admin/upload-avatar',
+
+    // 商品分类图片上传接口
+    productCategoryUploadUrl: '/api/product/category/upload-pic',
   }
 }
 

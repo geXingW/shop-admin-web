@@ -72,6 +72,10 @@
         <el-form-item label="关键字" prop="keywords">
           <el-input v-model="form.keywords" placeholder="关键字" style="width: 400px" />
         </el-form-item>
+
+        <el-form-item label="分类图标：">
+          <single-upload v-model="form.icon" :action="productCategoryUploadUrl" :params="uploadParams"></single-upload>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -175,6 +179,8 @@ import rrOperation from "@crud/RR.operation";
 import crudOperation from "@crud/CRUD.operation";
 import udOperation from "@crud/UD.operation";
 import DateRangePicker from "@/components/DateRangePicker";
+import SingleUpload from '@/components/Upload/singleUpload';
+import { mapGetters } from 'vuex'
 
 // crud交由presenter持有
 const defaultForm = {
@@ -186,7 +192,7 @@ const defaultForm = {
   showStatus: 0,
   icon: null,
   keywords: null,
-};
+}
 export default {
   name: "ProductCategory",
   components: {
@@ -196,6 +202,7 @@ export default {
     rrOperation,
     udOperation,
     DateRangePicker,
+    SingleUpload
   },
   cruds() {
     return CRUD({
@@ -203,11 +210,16 @@ export default {
       title: "商品分类",
       url: "api/product/category",
       crudMethod: { ...crudProductCategory },
-    });
+    })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
   dicts: ["show_status"],
+  computed: {
+    ...mapGetters([
+      'productCategoryUploadUrl'
+    ])
+  },
   data() {
     return {
       categories: [],
@@ -220,7 +232,11 @@ export default {
         title: [{ required: true, message: "请输入标题", trigger: "blur" }],
         path: [{ required: true, message: "请输入地址", trigger: "blur" }],
       },
-    };
+      uploadParams: {
+        uploadId: 0,
+        uploadType: 'product_category'
+      }
+    }
   },
   methods: {
     changeShowStatus(data, val) {
@@ -240,30 +256,26 @@ export default {
               this.crud.notify(
                 this.dict.label.show_status[val] + "成功",
                 CRUD.NOTIFICATION_TYPE.SUCCESS
-              );
+              )
             })
             .catch((e) => {
               console.log(e);
-              data.showStatus = data.showStatus == 1 ? 1 : 0;
-            });
+              data.showStatus = data.showStatus == 1 ? 1 : 0
+            })
         })
         .catch(() => {
-          data.showStatus = data.showStatus == 1 ? 1 : 0;
-        });
+          data.showStatus = data.showStatus == 1 ? 1 : 0
+        })
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      form.showStatus = form.showStatus + "" 
-
+      form.showStatus = form.showStatus + ''
       this.categories = []
-      // if (form.id == null) {
       this.loadCategories({pid: 0})
-      // } else {
-        // this.getSupCategories(form.pid)
-      // }
+      this.uploadParams.uploadId = this.form.id || 0
     },
     getCategories(tree, treeNode, resolve) {
-      crudProductCategory.list({pid : tree.id}).then(data => {
+      crudProductCategory.list({ pid: tree.id }).then(data => {
         resolve(data.data.records)
       })
       // let that = this
@@ -287,34 +299,33 @@ export default {
     },
     getSupCategories(id) {
       crudProductCategory.getCategorySuperior(id).then(({ data }) => {
-        console.log(data);
-        const children = data.map(function (obj) {
+        const children = data.map(function(obj) {
           if (!obj.leaf && !obj.children) {
-            obj.children = null;
+            obj.children = null
           }
-          return obj;
-        });
-        this.menus = [{ id: 0, label: "顶级类目", children: children }];
-      });
+          return obj
+        })
+        this.menus = [{ id: 0, label: '顶级类目', children: children }]
+      })
     },
     loadCategories({ action, parentNode, callback }) {
-      let that = this
-      that.categories = [{id: 0, label: "顶级分类", hasChildren: true, children: []}]
-      crudProductCategory.list().then(({data}) => {
-        that.categories[0].children = data.records.map(function(obj){
-            return {
-              id: obj.id,
-              label: obj.name
-            }
+      const that = this
+      that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
+      crudProductCategory.list().then(({ data }) => {
+        that.categories[0].children = data.records.map(function(obj) {
+          return {
+            id: obj.id,
+            label: obj.name
+          }
         })
       })
     },
     // 选中图标
     selected(name) {
-      this.form.icon = name;
-    },
-  },
-};
+      this.form.icon = name
+    }
+  }
+}
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
