@@ -114,7 +114,11 @@
         label="图标"
         width="125px"
         prop="icon"
-      />
+      >
+        <template slot-scope="scope">
+          <img :src="scope.row.icon" width="50px"> 
+        </template>
+      </el-table-column>
       <!-- 层级 -->
       <el-table-column
         :show-overflow-tooltip="true"
@@ -234,7 +238,7 @@ export default {
       },
       uploadParams: {
         uploadId: 0,
-        uploadType: 'product_category'
+        uploadType: 'product-catetory'
       }
     }
   },

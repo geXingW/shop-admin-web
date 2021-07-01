@@ -22,8 +22,64 @@
           <crudOperation show="" :permission="permission" />
         </div>
         <!--表单渲染-->
-        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
+        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
+        :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
+          <el-form
+            ref="form"
+            :inline="true"
+            :model="form"
+            :rules="rules"
+            size="small"
+            label-width="80px"
+          >
+            <el-form-item label="名称" prop="title">
+              <el-input v-model="form.title" style="width: 400px"/>
+            </el-form-item>
 
+            <el-form-item label="子标题" prop="title">
+              <el-input v-model="form.sub_title" style="width: 400px"/>
+            </el-form-item>
+
+            <el-form-item label="售价" prop="price">
+              <el-input-number v-model.number="form.price" :min="0" controls-position="right" style="width: 150px;"/>
+            </el-form-item>
+
+            <el-form-item label="原价" prop="original_price">
+              <el-input-number v-model.number="form.original_price" :min="0" controls-position="right" style="width: 150px;"/>
+            </el-form-item>
+
+            <el-form-item label="库存" prop="original_price">
+              <el-input-number v-model.number="form.stock" :min="0" :max="999" controls-position="right" style="width: 150px;" />
+            </el-form-item>
+
+            <el-form-item label="预警库存" prop="original_price">
+              <el-input-number v-model.number="form.low_stock" :min="0" controls-position="right" style="width: 150px;" />
+            </el-form-item>
+
+            <el-form-item label="商品分类" prop="pid">
+              <treeselect
+                v-model="form.pid"
+                :options="categories"
+                :load-options="loadCategories"
+                style="width: 400px;"
+                placeholder="选择商品分类"
+              />
+            </el-form-item>
+            <el-form-item label="上架">
+              <el-radio-group v-model="form.on_sale">
+                <el-radio
+                  v-for="item in dict.product_sale_status"
+                  :key="item.id"
+                  :label="item.value"
+                  >{{ item.label}}
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <br />
+            <el-form-item label="商品图片" prop="pic">
+              <single-upload v-model="form.pic" :action="commonUploadUrl" :params="picUploadParams"></single-upload>
+            </el-form-item>
+          </el-form>
           <div slot="footer" class="dialog-footer">
             <el-button type="text" @click="crud.cancelCU">取消</el-button>
             <el-button :loading="crud.status.cu === 2" type="primary" @click="crud.submitCU">确认</el-button>
@@ -32,13 +88,22 @@
         <!--表格渲染-->
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column :show-overflow-tooltip="true" prop="name" label="商品名" />
+          <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
+          <!-- 图片 -->
+          <el-table-column label="图片">
+            <template slot-scope="scope"><img :src="scope.row.pic" /></template>
+          </el-table-column>
+          <!-- 价格 -->
+          <el-table-column label="价格">
+            <template slot-scope="scope">
+              <span>{{ scope.row.price }}</span>
+              <span>{{ scope.row.original_price }}</span>
+            </template>
+          </el-table-column>
           <!-- 品牌 -->
           <el-table-column label="品牌"><template>小米</template></el-table-column>
           <!-- 分类 -->
           <el-table-column label="分类"><template>手机</template></el-table-column>
-          <!-- 图片 -->
-          <el-table-column label="商品图片"><template>手机</template></el-table-column>
           <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期" />
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
@@ -65,10 +130,8 @@
 
 <script>
 import curdProduct from '@/api/product/product'
-import { isvalidPhone } from '@/utils/validate'
 import { getDepts, getDeptSuperior } from '@/api/system/dept'
 import { getAll, getLevel } from '@/api/system/role'
-import { getAllJob } from '@/api/system/job'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -79,29 +142,30 @@ import Treeselect from '@riophae/vue-treeselect'
 import { mapGetters } from 'vuex'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
-let userRoles = []
-let userJobs = []
-const defaultForm = { id: null, name: null, price: 0, status: 0, category: { id : 0 } }
+import crudProductCategory from "@/api/product/category"
+import crudProduct from "@/api/product/product"
+import SingleUpload from '@/components/Upload/singleUpload'
+
+const defaultForm = { 
+  id: null, 
+  title: null, 
+  sub_title: null, 
+  price: 0, 
+  original_price: 0, 
+  on_sale: '1', 
+  category_id: 0, 
+  pic: null
+}
 export default {
-  name: 'User',
-  components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker },
+  name: 'Product',
+  components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker, SingleUpload },
   cruds() {
-    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...curdProduct }})
+    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...crudProduct }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
-  dicts: ['user_status'],
+  dicts: ['user_status', 'product_sale_status'],
   data() {
-    // 自定义验证
-    const validPhone = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error('请输入电话号码'))
-      } else if (!isvalidPhone(value)) {
-        callback(new Error('请输入正确的11位手机号码'))
-      } else {
-        callback()
-      }
-    }
     return {
       height: document.documentElement.clientHeight - 180 + 'px;',
       deptName: '', depts: [], deptDatas: [], jobs: [], level: 3, roles: [],
@@ -112,7 +176,11 @@ export default {
         edit: ['admin', 'user:edit'],
         del: ['admin', 'user:del']
       },
-
+      picUploadParams: {
+        uploadId: 0,
+        uploadType: 'product-pic'
+      },
+      categories: [],
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -125,21 +193,17 @@ export default {
         email: [
           { required: true, message: '请输入邮箱地址', trigger: 'blur' },
           { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-        ],
-        phone: [
-          { required: true, trigger: 'blur', validator: validPhone }
         ]
       }
     }
   },
   computed: {
     ...mapGetters([
-      'user'
+      'user',
+      'commonUploadUrl'
     ])
   },
-  created() {
-    this.crud.msg.add = '新增成功，默认密码：123456'
-  },
+  created() {},
   mounted: function() {
     const that = this
     window.onresize = function temp() {
@@ -147,195 +211,33 @@ export default {
     }
   },
   methods: {
-    changeRole(value) {
-      userRoles = []
-      value.forEach(function(data, index) {
-        const role = { id: data }
-        userRoles.push(role)
-      })
-    },
-    changeJob(value) {
-      userJobs = []
-      value.forEach(function(data, index) {
-        const job = { id: data }
-        userJobs.push(job)
-      })
-    },
-    deleteTag(value) {
-      userRoles.forEach(function(data, index) {
-        if (data.id === value) {
-          userRoles.splice(index, value)
-        }
-      })
-    },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      // this.getRoles()
-      // if (form.id == null) {
-      //   this.getDepts()
-      // } else {
-      //   this.getSupDepts(form.dept.id)
-      // }
-      // this.getRoleLevel()
-      // this.getJobs()
-      // form.enabled = form.enabled.toString()
+      this.loadCategories({pid: 0})
     },
     // 新增前将多选的值设置为空
     [CRUD.HOOK.beforeToAdd]() {
-      // this.jobDatas = []
-      // this.roleDatas = []
+
     },
     // 初始化编辑时候的角色与岗位
     [CRUD.HOOK.beforeToEdit](crud, form) {
-      // this.getJobs(this.form.dept.id)
-      // this.jobDatas = []
-      // this.roleDatas = []
-      // userRoles = []
-      // userJobs = []
-      // const _this = this
-      // form.roles.forEach(function(role, index) {
-      //   _this.roleDatas.push(role.id)
-      //   const rol = { id: role.id }
-      //   userRoles.push(rol)
-      // })
-      // form.jobs.forEach(function(job, index) {
-      //   _this.jobDatas.push(job.id)
-      //   const data = { id: job.id }
-      //   userJobs.push(data)
-      // })
+
     },
     // 提交前做的操作
     [CRUD.HOOK.afterValidateCU](crud) {
-      // if (!crud.form.dept.id) {
-      //   this.$message({
-      //     message: '部门不能为空',
-      //     type: 'warning'
-      //   })
-      //   return false
-      // } else if (this.jobDatas.length === 0) {
-      //   this.$message({
-      //     message: '岗位不能为空',
-      //     type: 'warning'
-      //   })
-      //   return false
-      // } else if (this.roleDatas.length === 0) {
-      //   this.$message({
-      //     message: '角色不能为空',
-      //     type: 'warning'
-      //   })
-      //   return false
-      // }
-      // crud.form.roles = userRoles
-      // crud.form.jobs = userJobs
       return true
     },
-    // 获取左侧部门数据
-    getDeptDatas(node, resolve) {
-      const sort = 'id,desc'
-      const params = { sort: sort, pid: 0 }
-      if (typeof node !== 'object') {
-        if (node) {
-          params['name'] = node
-        }
-      } else if (node.level !== 0) {
-        params['pid'] = node.data.id
-      }
-      setTimeout(() => {
-        getDepts(params).then(({ data }) => {
-          if (resolve) {
-            resolve(data.records)
-          } else {
-            this.deptDatas = data.records
+    loadCategories({ action, parentNode, callback }) { // 获取商品分类
+      const that = this
+      that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
+      crudProductCategory.list().then(({ data }) => {
+        that.categories[0].children = data.records.map(function(obj) {
+          return {
+            id: obj.id,
+            label: obj.name
           }
         })
-      }, 100)
-    },
-    getDepts() {
-      getDepts({ enabled: true }).then(({ data }) => {
-        this.depts = data.map(function(obj) {
-          if (obj.hasChildren) {
-            obj.children = null
-          }
-          return obj
-        })
       })
-    },
-    getSupDepts(deptId) {
-      getDeptSuperior(deptId).then(res => {
-        const data = res.data
-        this.buildDepts(data)
-        this.depts = data
-      })
-    },
-    buildDepts(depts) {
-      depts.forEach(data => {
-        if (data.children && data.children.length > 0) {
-          this.buildDepts(data.children)
-        }
-        if (data.hasChildren && !data.children) {
-          data.children = null
-        }
-      })
-    },
-    // 获取弹窗内部门数据
-    loadDepts({ action, parentNode, callback }) {
-      if (action === LOAD_CHILDREN_OPTIONS) {
-        getDepts({ enabled: true, pid: parentNode.id }).then(res => {
-          parentNode.children = res.data.map(function(obj) {
-            if (obj.hasChildren) {
-              obj.children = null
-            }
-            return obj
-          })
-          setTimeout(() => {
-            callback()
-          }, 200)
-        })
-      }
-    },
-    // 切换部门
-    handleNodeClick(data) {
-      if (data.pid === 0) {
-        this.query.deptId = null
-      } else {
-        this.query.deptId = data.id
-      }
-      this.crud.toQuery()
-    },
-    // 改变状态
-    changeEnabled(data, val) {
-      this.$confirm('此操作将 "' + this.dict.label.user_status[val] + '" ' + data.username + ', 是否继续？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        curdAdmin.edit(data).then(res => {
-          this.crud.notify(this.dict.label.user_status[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
-        }).catch(() => {
-          data.enabled = !data.enabled
-        })
-      }).catch(() => {
-        data.enabled = !data.enabled
-      })
-    },
-    // 获取弹窗内角色数据
-    getRoles() {
-      getAll().then(({ data }) => {
-        this.roles = data.records
-      }).catch(() => { })
-    },
-    // 获取弹窗内岗位数据
-    getJobs() {
-      getAllJob().then(({ data }) => {
-        this.jobs = data.records
-      }).catch(() => { })
-    },
-    // 获取权限级别
-    getRoleLevel() {
-      getLevel().then(({ data: level }) => {
-        console.log(level)
-        this.level = level
-      }).catch(() => { })
     },
     checkboxT(row, rowIndex) {
       return row.id !== this.user.id
