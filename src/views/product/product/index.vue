@@ -37,7 +37,7 @@
             </el-form-item>
 
             <el-form-item label="子标题" prop="title">
-              <el-input v-model="form.sub_title" style="width: 400px"/>
+              <el-input v-model="form.subTitle" style="width: 400px"/>
             </el-form-item>
 
             <el-form-item label="售价" prop="price">
@@ -45,7 +45,7 @@
             </el-form-item>
 
             <el-form-item label="原价" prop="original_price">
-              <el-input-number v-model.number="form.original_price" :min="0" controls-position="right" style="width: 150px;"/>
+              <el-input-number v-model.number="form.originalPrice" :min="0" controls-position="right" style="width: 150px;"/>
             </el-form-item>
 
             <el-form-item label="库存" prop="original_price">
@@ -53,20 +53,11 @@
             </el-form-item>
 
             <el-form-item label="预警库存" prop="original_price">
-              <el-input-number v-model.number="form.low_stock" :min="0" controls-position="right" style="width: 150px;" />
+              <el-input-number v-model.number="form.lowStock" :min="0" controls-position="right" style="width: 150px;" />
             </el-form-item>
 
-            <el-form-item label="商品分类" prop="pid">
-              <treeselect
-                v-model="form.pid"
-                :options="categories"
-                :load-options="loadCategories"
-                style="width: 400px;"
-                placeholder="选择商品分类"
-              />
-            </el-form-item>
             <el-form-item label="上架">
-              <el-radio-group v-model="form.on_sale">
+              <el-radio-group v-model="form.onSale">
                 <el-radio
                   v-for="item in dict.product_sale_status"
                   :key="item.id"
@@ -75,8 +66,25 @@
                 </el-radio>
               </el-radio-group>
             </el-form-item>
+            <el-form-item label="单位" prop="title">
+              <el-input v-model="form.unit" style="width: 150px"/>
+            </el-form-item>
+
+            <el-form-item label="关键字" prop="title">
+              <el-input v-model="form.keywords" style="width: 400px"/>
+            </el-form-item>
+
+            <el-form-item label="商品分类" prop="categoryId">
+              <treeselect
+                v-model="form.categoryId"
+                :options="categories"
+                :load-options="loadCategories"
+                style="width: 400px;"
+                placeholder="选择商品分类"
+              />
+            </el-form-item>
             <br />
-            <el-form-item label="商品图片" prop="pic">
+            <el-form-item label="商品图片">
               <single-upload v-model="form.pic" :action="commonUploadUrl" :params="picUploadParams"></single-upload>
             </el-form-item>
           </el-form>
@@ -91,7 +99,7 @@
           <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
           <!-- 图片 -->
           <el-table-column label="图片">
-            <template slot-scope="scope"><img :src="scope.row.pic" /></template>
+            <template slot-scope="scope"><img :src="scope.row.pic" width="50px" /></template>
           </el-table-column>
           <!-- 价格 -->
           <el-table-column label="价格">
@@ -130,8 +138,6 @@
 
 <script>
 import curdProduct from '@/api/product/product'
-import { getDepts, getDeptSuperior } from '@/api/system/dept'
-import { getAll, getLevel } from '@/api/system/role'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -149,12 +155,16 @@ import SingleUpload from '@/components/Upload/singleUpload'
 const defaultForm = { 
   id: null, 
   title: null, 
-  sub_title: null, 
+  subTitle: null, 
   price: 0, 
-  original_price: 0, 
-  on_sale: '1', 
-  category_id: 0, 
-  pic: null
+  originalPrice: 0, 
+  onSale: '1', 
+  categoryId: 0, 
+  pic: null,
+  stock: 0,
+  lowStock: 0,
+  unit: '',
+  keywords: ''
 }
 export default {
   name: 'Product',
@@ -178,7 +188,7 @@ export default {
       },
       picUploadParams: {
         uploadId: 0,
-        uploadType: 'product-pic'
+        uploadType: 'product'
       },
       categories: [],
       rules: {
@@ -214,18 +224,6 @@ export default {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
       this.loadCategories({pid: 0})
-    },
-    // 新增前将多选的值设置为空
-    [CRUD.HOOK.beforeToAdd]() {
-
-    },
-    // 初始化编辑时候的角色与岗位
-    [CRUD.HOOK.beforeToEdit](crud, form) {
-
-    },
-    // 提交前做的操作
-    [CRUD.HOOK.afterValidateCU](crud) {
-      return true
     },
     loadCategories({ action, parentNode, callback }) { // 获取商品分类
       const that = this

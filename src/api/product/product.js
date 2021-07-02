@@ -9,7 +9,7 @@ export function list() {
 
 export function add(data) {
   return request({
-    url: 'api/menu',
+    url: 'api/product',
     method: 'post',
     data
   })
@@ -17,7 +17,7 @@ export function add(data) {
 
 export function del(ids) {
   return request({
-    url: 'api/menu',
+    url: 'api/product',
     method: 'delete',
     data: ids
   })
@@ -25,7 +25,7 @@ export function del(ids) {
 
 export function edit(data) {
   return request({
-    url: 'api/menu',
+    url: 'api/product',
     method: 'put',
     data
   })

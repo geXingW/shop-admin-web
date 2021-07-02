@@ -301,17 +301,6 @@ export default {
       //   });
       // }, 100);
     },
-    getSupCategories(id) {
-      crudProductCategory.getCategorySuperior(id).then(({ data }) => {
-        const children = data.map(function(obj) {
-          if (!obj.leaf && !obj.children) {
-            obj.children = null
-          }
-          return obj
-        })
-        this.menus = [{ id: 0, label: '顶级类目', children: children }]
-      })
-    },
     loadCategories({ action, parentNode, callback }) {
       const that = this
       that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
