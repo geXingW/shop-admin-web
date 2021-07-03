@@ -113,6 +113,19 @@
           <!-- 分类 -->
           <el-table-column label="分类"><template>手机</template></el-table-column>
           <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期" />
+
+          <el-table-column label="上架" align="center" prop="onSale">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.onSale"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeEnabled(scope.row, scope.row.onSale)"
+              />
+            </template>
+          </el-table-column>
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
             label="操作"
@@ -239,7 +252,22 @@ export default {
     },
     checkboxT(row, rowIndex) {
       return row.id !== this.user.id
-    }
+    },
+    changeEnabled(data, val) { // 改变状态
+      this.$confirm('此操作将 "' + this.dict.label.product_sale_status[val] + '" ' + data.title + ', 是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        curdProduct.edit(data).then(res => {
+          this.crud.notify(this.dict.label.product_sale_status[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
+        }).catch(() => {
+          data.onSale = !data.onSale
+        })
+      }).catch(() => {
+        data.onSale = !data.onSale
+      })
+    },
   }
 }
 </script>
