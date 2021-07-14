@@ -51,31 +51,6 @@
         <el-form-item label="排序" prop="menuSort">
           <el-input-number v-model.number="form.sort" :min="0" :max="999" controls-position="right" style="width: 178px;" />
         </el-form-item>
-
-        <el-form-item label="顶级分类" prop="level">
-          <el-radio-group v-model="form.level">
-            <el-radio :label="0">是</el-radio>
-            <el-radio :label="1">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-form-item label="上级分类" prop="pid">
-          <treeselect
-            v-model="form.pid"
-            :options="categories"
-            :load-options="loadCategories"
-            style="width: 450px;"
-            placeholder="选择上级分类"
-          />
-        </el-form-item>
-        
-        <el-form-item label="关键字" prop="keywords">
-          <el-input v-model="form.keywords" placeholder="关键字" style="width: 400px" />
-        </el-form-item>
-
-        <el-form-item label="分类图标：">
-          <single-upload v-model="form.icon" :action="productCategoryUploadUrl" :params="uploadParams"></single-upload>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -92,9 +67,7 @@
       ref="table"
       v-loading="crud.loading"
       lazy
-      :load="getCategories"
       :data="crud.data"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       row-key="id"
       @select="crud.selectChange"
       @select-all="crud.selectAllChange"
@@ -108,25 +81,6 @@
         width="125px"
         prop="name"
       />
-      <!-- 图标 -->
-      <el-table-column
-        :show-overflow-tooltip="true"
-        label="图标"
-        width="125px"
-        prop="icon"
-      >
-        <template slot-scope="scope">
-          <img :src="scope.row.icon" width="50px"> 
-        </template>
-      </el-table-column>
-      <!-- 层级 -->
-      <el-table-column
-        :show-overflow-tooltip="true"
-        label="层级"
-        width="125px"
-        prop="level"
-      />
-
       <el-table-column
         :show-overflow-tooltip="true"
         label="排序"
@@ -147,13 +101,6 @@
       </el-table-column>
       <!-- 分类关键字 -->
       <el-table-column
-        :show-overflow-tooltip="true"
-        label="关键字"
-        width="125px"
-        prop="keywords"
-      />
-      <el-table-column prop="createTime" label="创建日期" width="135px" />
-      <el-table-column
         v-if="checkPer(['admin', 'menu:edit', 'menu:del'])"
         label="操作"
         width="130px"
@@ -173,9 +120,7 @@
 </template>
 
 <script>
-import crudProductCategory from "@/api/product/category";
-import IconSelect from "@/components/IconSelect";
-import Treeselect from "@riophae/vue-treeselect";
+import crudBanner from "@/api/system/banner";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { LOAD_CHILDREN_OPTIONS } from "@riophae/vue-treeselect";
 import CRUD, { presenter, header, form, crud } from "@crud/crud";
@@ -198,10 +143,8 @@ const defaultForm = {
   keywords: null,
 }
 export default {
-  name: "ProductCategory",
+  name: "Banner",
   components: {
-    Treeselect,
-    IconSelect,
     crudOperation,
     rrOperation,
     udOperation,
@@ -211,9 +154,9 @@ export default {
   cruds() {
     return CRUD({
       query: {pid: 0},
-      title: "商品分类",
-      url: "api/product/category",
-      crudMethod: { ...crudProductCategory },
+      title: "轮播图",
+      url: "api/banner",
+      crudMethod: { ...crudBanner },
     })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
@@ -228,9 +171,9 @@ export default {
     return {
       categories: [],
       permission: {
-        add: ["admin", "product-category:list"],
-        edit: ["admin", "product-category:edit"],
-        del: ["admin", "product-category:del"],
+        add: ["admin", "banner:add"],
+        edit: ["admin", "banner:edit"],
+        del: ["admin", "banner:del"],
       },
       rules: {
         title: [{ required: true, message: "请输入标题", trigger: "blur" }],
@@ -254,7 +197,7 @@ export default {
         { confirmButtonText: "确定", cancelButtonText: "取消", type: "warning" }
       )
         .then(() => {
-          crudProductCategory
+          crudBanner
             .edit(data)
             .then((res) => {
               this.crud.notify(
@@ -263,7 +206,6 @@ export default {
               )
             })
             .catch((e) => {
-              console.log(e);
               data.showStatus = data.showStatus == 1 ? 1 : 0
             })
         })
@@ -274,44 +216,7 @@ export default {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
       form.showStatus = form.showStatus + ''
-      this.categories = []
-      this.loadCategories({pid: 0})
       this.uploadParams.uploadId = this.form.id || 0
-    },
-    getCategories(tree, treeNode, resolve) {
-      crudProductCategory.list({ pid: tree.id }).then(data => {
-        resolve(data.data.records)
-      })
-      // let that = this
-      // that.categories = [{id: 0, label: "顶级分类", hasChildren: true, children: []}]
-      // crudProductCategory.list(params).then(({data}) => {
-      //   that.categories[0].children = data.records.map(function(obj){
-      //       return {
-      //         id: obj.id,
-      //         label: obj.name
-      //       }
-      //   })
-      // })
-
-      // console.log(this.categories)
-      // const params = { pid: tree.id };
-      // setTimeout(() => {
-      //   crudProductCategory.list(params).then((data) => {
-      //     resolve(data.data.records);
-      //   });
-      // }, 100);
-    },
-    loadCategories({ action, parentNode, callback }) {
-      const that = this
-      that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
-      crudProductCategory.list().then(({ data }) => {
-        that.categories[0].children = data.records.map(function(obj) {
-          return {
-            id: obj.id,
-            label: obj.name
-          }
-        })
-      })
     },
     // 选中图标
     selected(name) {
