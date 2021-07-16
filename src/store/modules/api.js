@@ -32,6 +32,9 @@ const api = {
 
     // 商品分类图片上传接口
     productCategoryUploadUrl: '/api/product/category/upload-pic',
+
+    // banner图片上传
+    bannerUploadUrl: '/api/banner/upload'
   }
 }
 

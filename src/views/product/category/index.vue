@@ -228,7 +228,7 @@ export default {
     return {
       categories: [],
       permission: {
-        add: ["admin", "product-category:list"],
+        add: ["admin", "product-category:add"],
         edit: ["admin", "product-category:edit"],
         del: ["admin", "product-category:del"],
       },

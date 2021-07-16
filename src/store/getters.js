@@ -22,6 +22,7 @@ const getters = {
   swaggerApi: state => state.api.swaggerApi,
   commonUploadUrl: state => state.api.commonUploadUrl,
   avatarUploadUrl: state => state.api.avatarUploadUrl,
+  bannerUploadUrl: state => state.api.bannerUploadUrl,
   productCategoryUploadUrl: state => state.api.productCategoryUploadUrl,
   sidebarRouters: state => state.permission.sidebarRouters
 }

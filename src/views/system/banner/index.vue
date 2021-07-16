@@ -36,7 +36,7 @@
         label-width="80px"
       >
         <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.name" style="width: 400px;" />
         </el-form-item>
         <el-form-item label="显示">
           <el-radio-group v-model="form.showStatus">
@@ -51,6 +51,19 @@
         <el-form-item label="排序" prop="menuSort">
           <el-input-number v-model.number="form.sort" :min="0" :max="999" controls-position="right" style="width: 178px;" />
         </el-form-item>
+        <el-form-item label="链接地址" prop="link">
+          <el-input v-model="form.link" style="width: 400px;" />
+        </el-form-item>
+        <el-form-item label="开始时间" prop="startTime">
+          <date-picker v-model="form.startTime" type="datetime" class="date-item" />
+        </el-form-item>
+        <el-form-item label="结束时间" prop="endTime">
+          <date-picker v-model="form.endTime" type="datetime" class="date-item" />
+        </el-form-item>
+        <el-form-item label="商品图片">
+          <single-upload v-model="form.pic" :action="commonUploadUrl" :params="uploadParams"></single-upload>
+        </el-form-item>
+        
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -130,6 +143,7 @@ import udOperation from "@crud/UD.operation";
 import DateRangePicker from "@/components/DateRangePicker";
 import SingleUpload from '@/components/Upload/singleUpload';
 import { mapGetters } from 'vuex'
+import { DatePicker } from 'element-ui'
 
 // crud交由presenter持有
 const defaultForm = {
@@ -139,8 +153,9 @@ const defaultForm = {
   sort: 999,
   level: 0,
   showStatus: 0,
-  icon: null,
-  keywords: null,
+  link: null,
+  startTime: '',
+  endTime: ''
 }
 export default {
   name: "Banner",
@@ -149,7 +164,8 @@ export default {
     rrOperation,
     udOperation,
     DateRangePicker,
-    SingleUpload
+    SingleUpload,
+    DatePicker
   },
   cruds() {
     return CRUD({
@@ -164,7 +180,7 @@ export default {
   dicts: ["show_status"],
   computed: {
     ...mapGetters([
-      'productCategoryUploadUrl'
+      'commonUploadUrl'
     ])
   },
   data() {
@@ -181,7 +197,7 @@ export default {
       },
       uploadParams: {
         uploadId: 0,
-        uploadType: 'product-catetory'
+        uploadType: 'banner'
       }
     }
   },
@@ -218,10 +234,10 @@ export default {
       form.showStatus = form.showStatus + ''
       this.uploadParams.uploadId = this.form.id || 0
     },
-    // 选中图标
-    selected(name) {
-      this.form.icon = name
-    }
+    // 提交前
+    [CRUD.HOOK.beforeCrudSubmitCU](crud, form) {
+
+    },
   }
 }
 </script>
