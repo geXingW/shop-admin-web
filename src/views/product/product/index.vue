@@ -16,6 +16,40 @@
               class="filter-item"
               @keyup.enter.native="crud.toQuery"
             />
+
+            <el-select
+              v-model="query.isNew"
+              clearable
+              size="small"
+              placeholder="新品推荐"
+              class="filter-item"
+              style="width: 100px"
+              @change="crud.toQuery"
+            >
+              <el-option
+                v-for="item in isNewOptions"
+                :key="item.key"
+                :label="item.display_name"
+                :value="item.key"
+              />
+            </el-select>
+
+            <el-select
+              v-model="query.isRecommend"
+              clearable
+              size="small"
+              placeholder="商品推荐"
+              class="filter-item"
+              style="width: 100px"
+              @change="crud.toQuery"
+            >
+              <el-option
+                v-for="item in isRecommendOptions"
+                :key="item.key"
+                :label="item.display_name"
+                :value="item.key"
+              />
+            </el-select>
             <date-range-picker v-model="query.createTime" class="date-item" />
             <rrOperation />
           </div>
@@ -56,7 +90,7 @@
               <el-input-number v-model.number="form.lowStock" :min="0" controls-position="right" style="width: 150px;" />
             </el-form-item>
 
-            <el-form-item label="上架">
+            <el-form-item label="上架"  style="width: 231px">
               <el-radio-group v-model="form.onSale">
                 <el-radio
                   v-for="item in dict.product_sale_status"
@@ -66,10 +100,28 @@
                 </el-radio>
               </el-radio-group>
             </el-form-item>
+
             <el-form-item label="单位" prop="title">
               <el-input v-model="form.unit" style="width: 150px"/>
             </el-form-item>
-
+            <el-form-item label="新品推荐">
+              <el-switch
+                v-model="form.isNew"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+              />
+            </el-form-item>
+            <el-form-item label="精品推荐">
+              <el-switch
+                v-model="form.isRecommend"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+              />
+            </el-form-item>
             <el-form-item label="关键字" prop="title">
               <el-input v-model="form.keywords" style="width: 400px"/>
             </el-form-item>
@@ -94,27 +146,26 @@
           </div>
         </el-dialog>
         <!--表格渲染-->
-        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
+        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
           <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
           <!-- 图片 -->
-          <el-table-column label="图片">
-            <template slot-scope="scope"><img :src="scope.row.pic" width="50px" /></template>
+          <el-table-column label="图片" width="100">
+            <template slot-scope="scope"><img :src="scope.row.pic" width="100px" /></template>
           </el-table-column>
           <!-- 价格 -->
-          <el-table-column label="价格">
+          <el-table-column label="价格" width="80">
             <template slot-scope="scope">
               <span>{{ scope.row.price }}</span>
               <span>{{ scope.row.original_price }}</span>
             </template>
           </el-table-column>
           <!-- 品牌 -->
-          <el-table-column label="品牌"><template>小米</template></el-table-column>
+          <el-table-column label="品牌" width="80"><template>小米</template></el-table-column>
           <!-- 分类 -->
-          <el-table-column label="分类"><template>手机</template></el-table-column>
-          <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期" />
+          <el-table-column label="分类" width="80"><template>手机</template></el-table-column>
 
-          <el-table-column label="上架" align="center" prop="onSale">
+          <el-table-column label="上架" align="center" prop="onSale" width="70px">
             <template slot-scope="scope">
               <el-switch
                 v-model="scope.row.onSale"
@@ -126,6 +177,35 @@
               />
             </template>
           </el-table-column>
+
+          <el-table-column label="新品推荐" align="center" prop="isNew" width="70px">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.isNew"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeIsNew(scope.row, scope.row.isNew)"
+              />
+            </template>
+          </el-table-column>
+
+          <el-table-column label="新品推荐" align="center" prop="isRecommend" width="70px">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.isRecommend"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeIsRecommend(scope.row, scope.row.isRecommend)"
+              />
+            </template>
+          </el-table-column>
+
+          <el-table-column :show-overflow-tooltip="true" prop="createTime" width="150" label="创建日期" />
+
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
             label="操作"
@@ -171,7 +251,9 @@ const defaultForm = {
   subTitle: null, 
   price: 0, 
   originalPrice: 0, 
-  onSale: '1', 
+  onSale: '1',
+  isNew: '0',
+  isRecommend: '0', 
   categoryId: 0, 
   pic: null,
   stock: 0,
@@ -187,7 +269,7 @@ export default {
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
-  dicts: ['user_status', 'product_sale_status'],
+  dicts: ['user_status', 'product_sale_status', 'product_is_new', 'product_is_recommend'],
   data() {
     return {
       height: document.documentElement.clientHeight - 180 + 'px;',
@@ -204,6 +286,14 @@ export default {
         uploadType: 'product'
       },
       categories: [],
+      isNewOptions: [
+        { key: 1, display_name: '是' },
+        { key: 0, display_name: '否' }
+      ],
+      isRecommendOptions: [
+        { key: 1, display_name: '是' },
+        { key: 0, display_name: '否' }
+      ],
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -236,18 +326,12 @@ export default {
   methods: {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      this.loadCategories({pid: 0})
+      this.loadCategories()
     },
-    loadCategories({ action, parentNode, callback }) { // 获取商品分类
+    loadCategories() { // 获取商品分类
       const that = this
-      that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
-      crudProductCategory.list().then(({ data }) => {
-        that.categories[0].children = data.records.map(function(obj) {
-          return {
-            id: obj.id,
-            label: obj.name
-          }
-        })
+      crudProductCategory.tree().then(( data ) => {
+        that.categories = data.data
       })
     },
     checkboxT(row, rowIndex) {
@@ -261,6 +345,36 @@ export default {
       }).then(() => {
         curdProduct.edit(data).then(res => {
           this.crud.notify(this.dict.label.product_sale_status[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
+        }).catch(() => {
+          data.onSale = !data.onSale
+        })
+      }).catch(() => {
+        data.onSale = !data.onSale
+      })
+    },
+    changeIsNew(data, val) { // 改变新品推荐状态
+      this.$confirm('此操作将 "' + this.dict.label.product_is_new[val] + '" ' + data.title + ', 是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        curdProduct.edit(data).then(res => {
+          this.crud.notify(this.dict.label.product_is_new[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
+        }).catch(() => {
+          data.onSale = !data.onSale
+        })
+      }).catch(() => {
+        data.onSale = !data.onSale
+      })
+    },
+    changeIsRecommend(data, val) { // 改变商品推荐
+      this.$confirm('此操作将 "' + this.dict.label.product_is_recommend[val] + '" ' + data.title + ', 是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        curdProduct.edit(data).then(res => {
+          this.crud.notify(this.dict.label.product_is_recommend[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
         }).catch(() => {
           data.onSale = !data.onSale
         })

@@ -9,6 +9,13 @@ export function list(params) {
   })
 }
 
+export function tree() {
+  return request({
+    url: 'api/product/category/tree',
+    method: 'get'
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/product/category',
@@ -33,4 +40,4 @@ export function edit(data) {
   })
 }
 
-export default { add, edit, del, list }
+export default { add, edit, del, list, tree }

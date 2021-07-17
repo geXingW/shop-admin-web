@@ -34,6 +34,14 @@ service.interceptors.response.use(
       return response.data
     }
     const data = response.data || { status: 200000 }
+
+    if (data.status === 401000) {
+      return Notification.error({
+        title: data.message,
+        duration: 5000
+      })  
+    }
+
     if (data.status !== 200000) {
       Notification.error({
         title: data.message,
