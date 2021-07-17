@@ -94,17 +94,21 @@
         width="125px"
         prop="name"
       />
+      <!-- 图片 -->
+      <el-table-column label="图片">
+        <template slot-scope="scope"><img :src="scope.row.pic" width="50px" /></template>
+      </el-table-column>
       <el-table-column
         :show-overflow-tooltip="true"
         label="排序"
-        width="125px"
         prop="sort"
+        align="center"
       />
       <el-table-column label="显示" align="center" prop="showStatus">
         <template slot-scope="scope">
           <el-switch
-            :active-value="1"
-            :inactive-value="0"
+            active-value="1"
+            inactive-value="0"
             v-model="scope.row.showStatus"
             active-color="#409EFF"
             inactive-color="#F56C6C"
@@ -112,7 +116,15 @@
           />
         </template>
       </el-table-column>
-      <!-- 分类关键字 -->
+      <!-- 有效期 -->
+      <el-table-column label="有效期" min-width="220">
+        <template slot-scope="scope">
+          <span>开始时间：{{ scope.row.startTime }}</span>
+          <br>
+          <span>结束时间：{{ scope.row.endTime }}</span>
+        </template>
+      </el-table-column>
+      <!-- 操作 -->
       <el-table-column
         v-if="checkPer(['admin', 'menu:edit', 'menu:del'])"
         label="操作"
@@ -149,13 +161,12 @@ import { DatePicker } from 'element-ui'
 const defaultForm = {
   id: null,
   name: null,
-  pid: 0,
   sort: 999,
-  level: 0,
   showStatus: 0,
   link: null,
   startTime: '',
-  endTime: ''
+  endTime: '',
+  pic: ''
 }
 export default {
   name: "Banner",
@@ -169,7 +180,7 @@ export default {
   },
   cruds() {
     return CRUD({
-      query: {pid: 0},
+      query: {},
       title: "轮播图",
       url: "api/banner",
       crudMethod: { ...crudBanner },
