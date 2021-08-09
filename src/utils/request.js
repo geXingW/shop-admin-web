@@ -36,10 +36,12 @@ service.interceptors.response.use(
     const data = response.data || { status: 200000 }
 
     if (data.status === 401000) {
-      return Notification.error({
+      Notification.error({
         title: data.message,
         duration: 5000
-      })  
+      })
+
+      return router.push({ path: '/login' })
     }
 
     if (data.status !== 200000) {
