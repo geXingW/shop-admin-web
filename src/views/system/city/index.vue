@@ -28,11 +28,12 @@
         </el-form-item>
         <el-form-item style="margin-bottom: 0;" label="所属城市" prop="parentCode">
           <treeselect
-            v-model="form.parent_code"
+            v-model="form.parentCode"
             :load-options="loadCities"
             :options="cities"
             style="width: 370px;"
             placeholder="选择所属城市"
+            :normalizer="normalizer"
           />
         </el-form-item>
       </el-form>
@@ -83,12 +84,12 @@
   import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
 
   // crud交由presenter持有
-  const defaultForm = { id: null, name: null, code: null, parentCode: null }
+  const defaultForm = { id: null, name: null, parentId: null }
   export default {
     name: 'SystemCity',
     components: { Treeselect, IconSelect, crudOperation, rrOperation, udOperation, DateRangePicker },
     cruds() {
-      return CRUD({ title: '城市管理', url: 'api/sys/city', crudMethod: { ...crudCity }})
+      return CRUD({ title: '城市管理', url: 'api/sys/city', crudMethod: { ...crudCity }, params: {size: 9999}})
     },
     mixins: [presenter(), header(), form(defaultForm), crud()],
     data() {
@@ -98,8 +99,11 @@
 			name: [
 			  { required: true, message: '请输入城市名称', trigger: 'blur' }
 			],
-			parentCode: [
+			code: [
 			  { required: true, message: '请输入城市编号', trigger: 'blur', type: 'number' }
+			],
+			parentCode: [
+			  { required: true, message: '请选择父级城市编号', trigger: 'blur', type: 'number' }
 			]
 		},
         permission: {
@@ -107,14 +111,19 @@
           edit: ['admin', 'menu:edit'],
           del: ['admin', 'menu:del']
         },
+		normalizer(node) {
+		  return {
+		    id: node.code,
+		    label: node.name,
+		    children: node.children,
+		  }
+		},
       }
     },
     methods: {
 		loadCities({action, treeNode, resolve}) {
-			console.log("load")
-			crudCity.list({ parent_code: treeNode.code, page: 1, size: 9999 }).then(({ data }) => {
+			crudCity.list({ parentCode: treeNode.id, page: 1, size: 9999 }).then(({ data }) => {
 				parentNode.children = data.records
-				console.log(data)
 				resolve()
 			})
 		},
@@ -127,7 +136,6 @@
 			let that = this
 			crudCity.buildTree({id: cityId}).then(({data}) => {
 				that.cities = data
-				console.log(data)
 			})
 		},
         // 新增与编辑前做的操作
