@@ -148,61 +148,6 @@
         <!--表格渲染-->
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
-          <!-- 图片 -->
-          <el-table-column label="图片" width="100">
-            <template slot-scope="scope"><img :src="scope.row.pic" width="100px" /></template>
-          </el-table-column>
-          <!-- 价格 -->
-          <el-table-column label="价格" width="80">
-            <template slot-scope="scope">
-              <span>{{ scope.row.price }}</span>
-              <span>{{ scope.row.original_price }}</span>
-            </template>
-          </el-table-column>
-          <!-- 品牌 -->
-          <el-table-column label="品牌" width="80"><template>小米</template></el-table-column>
-          <!-- 分类 -->
-          <el-table-column label="分类" width="80"><template>手机</template></el-table-column>
-
-          <el-table-column label="上架" align="center" prop="onSale" width="70px">
-            <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.onSale"
-                active-color="#409EFF"
-                inactive-color="#F56C6C"
-                active-value="1"
-                inactive-value="0"
-                @change="changeEnabled(scope.row, scope.row.onSale)"
-              />
-            </template>
-          </el-table-column>
-
-          <el-table-column label="新品推荐" align="center" prop="isNew" width="70px">
-            <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.isNew"
-                active-color="#409EFF"
-                inactive-color="#F56C6C"
-                active-value="1"
-                inactive-value="0"
-                @change="changeIsNew(scope.row, scope.row.isNew)"
-              />
-            </template>
-          </el-table-column>
-
-          <el-table-column label="新品推荐" align="center" prop="isRecommend" width="70px">
-            <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.isRecommend"
-                active-color="#409EFF"
-                inactive-color="#F56C6C"
-                active-value="1"
-                inactive-value="0"
-                @change="changeIsRecommend(scope.row, scope.row.isRecommend)"
-              />
-            </template>
-          </el-table-column>
 
           <el-table-column :show-overflow-tooltip="true" prop="createTime" width="150" label="创建日期" />
 
@@ -230,7 +175,7 @@
 </template>
 
 <script>
-import curdProduct from '@/api/product/product'
+import curdOrder from '@/api/order/order'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -265,7 +210,7 @@ export default {
   name: 'Product',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker, SingleUpload },
   cruds() {
-    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...crudProduct }})
+    return CRUD({ title: '订单', url: 'api/order', crudMethod: { ...curdOrder }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
