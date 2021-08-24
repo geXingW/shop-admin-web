@@ -16,7 +16,6 @@
               class="filter-item"
               @keyup.enter.native="crud.toQuery"
             />
-
             <el-select
               v-model="query.isNew"
               clearable
@@ -33,7 +32,6 @@
                 :value="item.key"
               />
             </el-select>
-
             <el-select
               v-model="query.isRecommend"
               clearable
@@ -69,27 +67,21 @@
             <el-form-item label="名称" prop="title">
               <el-input v-model="form.title" style="width: 400px"/>
             </el-form-item>
-
             <el-form-item label="子标题" prop="title">
               <el-input v-model="form.subTitle" style="width: 400px"/>
             </el-form-item>
-
             <el-form-item label="售价" prop="price">
               <el-input-number v-model.number="form.price" :min="0" controls-position="right" style="width: 150px;"/>
             </el-form-item>
-
             <el-form-item label="原价" prop="original_price">
               <el-input-number v-model.number="form.originalPrice" :min="0" controls-position="right" style="width: 150px;"/>
             </el-form-item>
-
             <el-form-item label="库存" prop="original_price">
               <el-input-number v-model.number="form.stock" :min="0" :max="999" controls-position="right" style="width: 150px;" />
             </el-form-item>
-
             <el-form-item label="预警库存" prop="original_price">
               <el-input-number v-model.number="form.lowStock" :min="0" controls-position="right" style="width: 150px;" />
             </el-form-item>
-
             <el-form-item label="上架"  style="width: 231px">
               <el-radio-group v-model="form.onSale">
                 <el-radio
@@ -100,7 +92,6 @@
                 </el-radio>
               </el-radio-group>
             </el-form-item>
-
             <el-form-item label="单位" prop="title">
               <el-input v-model="form.unit" style="width: 150px"/>
             </el-form-item>
@@ -125,7 +116,6 @@
             <el-form-item label="关键字" prop="title">
               <el-input v-model="form.keywords" style="width: 400px"/>
             </el-form-item>
-
             <el-form-item label="商品分类" prop="categoryId">
               <treeselect
                 v-model="form.categoryId"
@@ -148,6 +138,61 @@
         <!--表格渲染-->
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
+          <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
+          <!-- 图片 -->
+          <el-table-column label="图片" width="100">
+            <template slot-scope="scope"><img :src="scope.row.pic" width="100px" /></template>
+          </el-table-column>
+          <!-- 价格 -->
+          <el-table-column label="价格" width="80">
+            <template slot-scope="scope">
+              <span>{{ scope.row.price }}</span>
+              <span>{{ scope.row.original_price }}</span>
+            </template>
+          </el-table-column>
+          <!-- 品牌 -->
+          <el-table-column label="品牌" width="80"><template>小米</template></el-table-column>
+          <!-- 分类 -->
+          <el-table-column label="分类" width="80"><template>手机</template></el-table-column>
+
+          <el-table-column label="上架" align="center" prop="onSale" width="70px">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.onSale"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeEnabled(scope.row, scope.row.onSale)"
+              />
+            </template>
+          </el-table-column>
+
+          <el-table-column label="新品推荐" align="center" prop="isNew" width="70px">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.isNew"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeIsNew(scope.row, scope.row.isNew)"
+              />
+            </template>
+          </el-table-column>
+
+          <el-table-column label="新品推荐" align="center" prop="isRecommend" width="70px">
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.isRecommend"
+                active-color="#409EFF"
+                inactive-color="#F56C6C"
+                active-value="1"
+                inactive-value="0"
+                @change="changeIsRecommend(scope.row, scope.row.isRecommend)"
+              />
+            </template>
+          </el-table-column>
 
           <el-table-column :show-overflow-tooltip="true" prop="createTime" width="150" label="创建日期" />
 
@@ -175,7 +220,7 @@
 </template>
 
 <script>
-import curdOrder from '@/api/order/order'
+import curdProduct from '@/api/product/product'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -189,7 +234,6 @@ import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
 import crudProductCategory from "@/api/product/category"
 import crudProduct from "@/api/product/product"
 import SingleUpload from '@/components/Upload/singleUpload'
-
 const defaultForm = { 
   id: null, 
   title: null, 
@@ -210,7 +254,7 @@ export default {
   name: 'Product',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker, SingleUpload },
   cruds() {
-    return CRUD({ title: '订单', url: 'api/order', crudMethod: { ...curdOrder }})
+    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...crudProduct }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
@@ -330,7 +374,6 @@ export default {
   }
 }
 </script>
-
 <style rel="stylesheet/scss" lang="scss" scoped>
   ::v-deep .vue-treeselect__control,::v-deep .vue-treeselect__placeholder,::v-deep .vue-treeselect__single-value {
     height: 30px;

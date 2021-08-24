@@ -46,16 +46,32 @@
         <!--表格渲染-->
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
           <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column prop="id" label="订单编号"/>
-          <el-table-column prop="memberId" label="下单人"/>
+          <el-table-column prop="id" label="订单编号" align="center"/>
+          <el-table-column prop="memberId" label="下单人" align="center"/>
 
-          <el-table-column prop="totalAmount" label="订单总额"/>
+          <el-table-column label="订单商品" :show-overflow-tooltip="true" width="200px" align="center">
+            <template slot-scope="scope">
+              <dl>
+                <dd v-for="(item) in scope.row.items" style="margin-inline-start: 0px;">
+                  {{ `${item.name}  ×  ${item.quantity}` }}
+                </dd>
+              </dl>
+            </template>
+          </el-table-column>
 
-          <el-table-column prop="itemAmount" label="商品总额"/>
+          <el-table-column prop="totalAmount" label="订单总额" align="center"/>
 
-          <el-table-column prop="freightAmount" label="运费总额"/>
+          <el-table-column prop="itemAmount" label="商品总额" align="center"/>
 
-          <el-table-column prop="createTime" label="创建时间"/>
+          <el-table-column prop="freightAmount" label="运费总额" align="center"/>
+
+          <el-table-column label="订单状态" align="center">
+            <template slot-scope="scope">
+              {{ scope.row.status }}
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="createTime" label="创建时间" align="center"/>
 
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
