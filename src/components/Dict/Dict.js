@@ -18,9 +18,11 @@ export default class Dict {
       ps.push(getDictDetail(n).then(data => {
         this.dict[n].splice(0, 0, ...data.data)
         data.data.forEach(d => {
+          d.value = isNaN(d.value) ? d.value: parseInt(d.value)
           Vue.set(this.dict.dict[n], d.value, d)
           Vue.set(this.dict.label[n], d.value, d.label)
         })
+        console.log(data.data)
       }))
     })
     await Promise.all(ps)

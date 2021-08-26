@@ -58,7 +58,6 @@ function CRUD(options) {
     debug: false
   }
   options = mergeOptions(defaultOptions, options)
-  console.log(options)
   const data = {
     ...options,
     // 记录数据状态
