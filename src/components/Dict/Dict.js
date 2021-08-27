@@ -22,7 +22,6 @@ export default class Dict {
           Vue.set(this.dict.dict[n], d.value, d)
           Vue.set(this.dict.label[n], d.value, d.label)
         })
-        console.log(data.data)
       }))
     })
     await Promise.all(ps)

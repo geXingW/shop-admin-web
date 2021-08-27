@@ -95,29 +95,29 @@
     data() {
       return {
       	cities: [],
-		rules: {
-			name: [
-			  { required: true, message: '请输入城市名称', trigger: 'blur' }
-			],
-			code: [
-			  { required: true, message: '请输入城市编号', trigger: 'blur', type: 'number' }
-			],
-			parentCode: [
-			  { required: true, message: '请选择父级城市编号', trigger: 'blur', type: 'number' }
-			]
-		},
+    		rules: {
+    			name: [
+    			  { required: true, message: '请输入城市名称', trigger: 'blur' }
+    			],
+    			code: [
+    			  { required: true, message: '请输入城市编号', trigger: 'blur', type: 'number' }
+    			],
+    			parentCode: [
+    			  { required: true, message: '请选择父级城市编号', trigger: 'blur', type: 'number' }
+    			]
+    		},
         permission: {
           add: ['admin', 'menu:add'],
           edit: ['admin', 'menu:edit'],
           del: ['admin', 'menu:del']
         },
-		normalizer(node) {
-		  return {
-		    id: node.code,
-		    label: node.name,
-		    children: node.children,
-		  }
-		},
+    		normalizer(node) {
+    		  return {
+    		    id: node.code,
+    		    label: node.name,
+    		    children: node.children,
+    		  }
+    		},
       }
     },
     methods: {

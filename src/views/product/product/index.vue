@@ -120,9 +120,9 @@
               <treeselect
                 v-model="form.categoryId"
                 :options="categories"
-                :load-options="loadCategories"
                 style="width: 400px;"
                 placeholder="选择商品分类"
+                :normalizer="treeNormalizer"
               />
             </el-form-item>
             <br />
@@ -265,6 +265,13 @@ export default {
       deptName: '', depts: [], deptDatas: [], jobs: [], level: 3, roles: [],
       jobDatas: [], roleDatas: [], // 多选时使用
       defaultProps: { children: 'children', label: 'name', isLeaf: 'leaf' },
+      treeNormalizer(node) {
+        return {
+          id: node.id,
+          label: node.name,
+          children: node.children,
+        }
+      },
       permission: {
         add: ['admin', 'user:add'],
         edit: ['admin', 'user:edit'],
@@ -319,8 +326,12 @@ export default {
     },
     loadCategories() { // 获取商品分类
       const that = this
-      crudProductCategory.tree().then(( data ) => {
-        that.categories = data.data
+      crudProductCategory.tree().then(({ data }) => {
+        if(data.length > 0){
+         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: true, children: data}]
+        }else {
+         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: false}]
+        }
       })
     },
     checkboxT(row, rowIndex) {

@@ -52,20 +52,13 @@
           <el-input-number v-model.number="form.sort" :min="0" :max="999" controls-position="right" style="width: 178px;" />
         </el-form-item>
 
-        <el-form-item label="顶级分类" prop="level">
-          <el-radio-group v-model="form.level">
-            <el-radio :label="0">是</el-radio>
-            <el-radio :label="1">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
         <el-form-item label="上级分类" prop="pid">
           <treeselect
             v-model="form.pid"
             :options="categories"
-            :load-options="loadCategories"
             style="width: 450px;"
             placeholder="选择上级分类"
+            :normalizer="treeNormalizer"
           />
         </el-form-item>
         
@@ -73,7 +66,7 @@
           <el-input v-model="form.keywords" placeholder="关键字" style="width: 400px" />
         </el-form-item>
 
-        <el-form-item label="分类图标：">
+        <el-form-item label="分类图标">
           <single-upload v-model="form.icon" :action="productCategoryUploadUrl" :params="uploadParams"></single-upload>
         </el-form-item>
       </el-form>
@@ -119,13 +112,6 @@
           <img :src="scope.row.icon" width="50px"> 
         </template>
       </el-table-column>
-      <!-- 层级 -->
-      <el-table-column
-        :show-overflow-tooltip="true"
-        label="层级"
-        width="125px"
-        prop="level"
-      />
 
       <el-table-column
         :show-overflow-tooltip="true"
@@ -192,9 +178,8 @@ const defaultForm = {
   name: null,
   pid: 0,
   sort: 999,
-  level: 0,
-  showStatus: 0,
-  icon: null,
+  showStatus: 1,
+  icon: '',
   keywords: null,
 }
 export default {
@@ -231,6 +216,13 @@ export default {
         add: ["admin", "product-category:add"],
         edit: ["admin", "product-category:edit"],
         del: ["admin", "product-category:del"],
+      },
+      treeNormalizer(node) {
+        return {
+          id: node.id,
+          label: node.name,
+          children: node.children,
+        }
       },
       rules: {
         title: [{ required: true, message: "请输入标题", trigger: "blur" }],
@@ -273,50 +265,31 @@ export default {
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      form.showStatus = form.showStatus + ''
       this.categories = []
-      this.loadCategories({pid: 0})
+      this.getCategoryTree()
       this.uploadParams.uploadId = this.form.id || 0
+    },
+    getCategoryTree() {
+      crudProductCategory.tree().then(({ data }) => {
+        if(data.length > 0){
+         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: true, children: data}]
+        }else {
+         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: false}]
+       }
+      })
     },
     getCategories(tree, treeNode, resolve) {
       crudProductCategory.list({ pid: tree.id }).then(data => {
         resolve(data.data.records)
-      })
-      // let that = this
-      // that.categories = [{id: 0, label: "顶级分类", hasChildren: true, children: []}]
-      // crudProductCategory.list(params).then(({data}) => {
-      //   that.categories[0].children = data.records.map(function(obj){
-      //       return {
-      //         id: obj.id,
-      //         label: obj.name
-      //       }
-      //   })
-      // })
-
-      // console.log(this.categories)
-      // const params = { pid: tree.id };
-      // setTimeout(() => {
-      //   crudProductCategory.list(params).then((data) => {
-      //     resolve(data.data.records);
-      //   });
-      // }, 100);
-    },
-    loadCategories({ action, parentNode, callback }) {
-      const that = this
-      that.categories = [{ id: 0, label: '顶级分类', hasChildren: true, children: [] }]
-      crudProductCategory.list().then(({ data }) => {
-        that.categories[0].children = data.records.map(function(obj) {
-          return {
-            id: obj.id,
-            label: obj.name
-          }
-        })
       })
     },
     // 选中图标
     selected(name) {
       this.form.icon = name
     }
+  },
+  mounted () {
+    this.getCategoryTree()
   }
 }
 </script>
