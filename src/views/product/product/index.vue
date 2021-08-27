@@ -269,7 +269,7 @@ export default {
         return {
           id: node.id,
           label: node.name,
-          children: node.children,
+          children: node.children && node.children.length > 0 ? node.children : 0,
         }
       },
       permission: {
