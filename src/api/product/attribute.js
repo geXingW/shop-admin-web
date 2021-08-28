@@ -27,7 +27,7 @@ export function del(ids) {
 
 export function edit(data) {
   return request({
-    url: 'api/product/attribute',
+    url: `api/product/attribute/${data.id}`,
     method: 'put',
     data
   })
