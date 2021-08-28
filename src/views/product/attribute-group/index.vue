@@ -10,8 +10,8 @@
 		  </div>
 		  <crudOperation :permission="permission" />
 		</div>
-
-        <!--表单渲染-->
+		
+		        <!--表单渲染-->
         <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
         :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
 	      <el-form
@@ -38,29 +38,6 @@
 	                :disable-branch-nodes="true"
                	/>
             </el-form-item>
-            <el-form-item label="输入类型" prop="inputType">
-			    <el-select v-model="form.inputType" placeholder="输入类型" style="width: 100px">
-				  <el-option 
-				  v-for="item in dict.prod_attr_input_type" 
-				  :key="item.value" 
-				  :label="item.label" 
-				  :value="item.value"/>
-				</el-select>
-				<el-input placeholder="请输入可选值，多个值之间','分割" :disabled="form.inputType == 0" 
-				v-model="form.inputValue" style="width: 300px" />
-            </el-form-item>
-            <el-form-item label="属性搜索" prop="searchable">
-				<el-select v-model="form.searchable" placeholder="是否支持搜索" style="width: 100px">
-					<el-option key="0" label="禁止搜索" :value="0" />
-					<el-option key="1" label="支持搜索" :value="1" />
-				</el-select>
-				<el-input placeholder="请输入搜索关键字" :disabled="form.searchable == 0" v-model="form.searchKeywords" style="width: 300px" />
-            </el-form-item>
-            <el-form-item label="属性类型" prop="type">
-				<el-radio v-model="form.type" :label="type.value" :key="index" v-for="(type, index) in dict.prod_attr_type">
-					{{ type.label }}
-				</el-radio>
-            </el-form-item>
 		  </el-form>
 			<div slot="footer" class="dialog-footer">
 			    <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -71,39 +48,11 @@
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler" align="center">
 			<el-table-column type="selection" width="55" />
 
-			<el-table-column :show-overflow-tooltip="true" prop="name" label="属性名"/>
+			<el-table-column :show-overflow-tooltip="true" prop="name" label="分组名"/>
 
-			<el-table-column :show-overflow-tooltip="true" prop="type" label="属性类型">
-				<template slot-scope="scope">
-					<el-tag v-for="(item, index) in dict.prod_attr_type" :key="index" v-show="item.value == scope.row.type">
-						{{ item.label }}
-					</el-tag>
-				</template>
-			</el-table-column>
+			<el-table-column :show-overflow-tooltip="true" prop="categoryName" label="所属分类" />
 
 			<el-table-column :show-overflow-tooltip="true" prop="sort" label="排序"/>
-
-			<el-table-column :show-overflow-tooltip="true" prop="inputType" label="输入类型">
-				<template slot-scope="scope">
-					<el-tag v-for="(item, index) in dict.prod_attr_input_type" 
-						:key="index" 
-						v-show="item.value == scope.row.inputType"
-						>
-						{{ item.label }}
-					</el-tag>
-				</template>
-			</el-table-column>
-
-			<el-table-column prop="inputValue" label="可选值" />
-
-			<el-table-column prop="searchable" label="搜索搜索" align="center">
-				<template slot-scope="scope">
-					<el-tag type="success" v-if="scope.row.searchable == 1">支持</el-tag>
-					<el-tag type="danger" v-else>不支持</el-tag>
-				</template>
-			</el-table-column>
-
-			<el-table-column :show-overflow-tooltip="true" prop="searchKeywords" label="搜索关键字" />
 
 			<el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期"/>
 
@@ -127,20 +76,19 @@
 	import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 	import DateRangePicker from '@/components/DateRangePicker'
 	import CRUD, { presenter, header, form, crud } from '@crud/crud'
-	import crudProdAttr from '@/api/product/attribute'
+	import crudProdAttrGroup from '@/api/product/attribute-group'
 	import { list as categoryList, tree as categoryTree } from '@/api/product/category'
 
 	// crud交由presenter持有
-	const defaultForm = { id: null, name: '', sort: 99, categoryId: null, inputType: 0, inputValue: '', 
-		searchable: 0, searchKeywords: '', type: 0 }
+	const defaultForm = { id: null, name: '', sort: 99, categoryId: null }
 	export default {
-		name: 'ProductAttribute',
+		name: 'ProductAttributeGroup',
 		components: { Treeselect, crudOperation, rrOperation, udOperation, DateRangePicker },
 		cruds() {
-			return CRUD({ title: '商品属性', url: 'api/product/attribute', crudMethod: { ...crudProdAttr }})
+			return CRUD({ title: '商品属性分组', url: 'api/product/attribute-group', crudMethod: { ...crudProdAttrGroup }})
 		},
 		mixins: [presenter(), header(), form(defaultForm), crud()],
-		dicts: ['prod_attr_input_type', 'prod_attr_type'],
+		dicts: [],
 		data() {
 			return {
 				rules: {},
@@ -153,9 +101,9 @@
 					}
 				},
 		        permission: {
-		          add: ['admin', 'product-attribute:add'],
-		          edit: ['admin', 'product-attribute:edit'],
-		          del: ['admin', 'product-attribute:del']
+		          add: ['admin', 'product-attribute-group:add'],
+		          edit: ['admin', 'product-attribute-group:edit'],
+		          del: ['admin', 'product-attribute-group:del']
 		        },
 			}
 		},
