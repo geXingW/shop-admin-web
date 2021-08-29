@@ -7,11 +7,11 @@
 		    <el-input v-model="query.blurry" clearable size="small" placeholder="模糊搜索" style="width: 200px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
 		    <date-range-picker v-model="query.createTime" class="date-item" />
 		    <rrOperation />
+			<crudOperation :permission="permission" />
 		  </div>
-		  <crudOperation :permission="permission" />
 		</div>
 		
-		        <!--表单渲染-->
+        <!--表单渲染-->
         <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
         :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
 	      <el-form
@@ -45,14 +45,29 @@
 			</div>
 		</el-dialog>
 
+		<!-- 属性设置 -->
+		<el-dialog append-to-body :visible.sync="attributeDialog.show" :title="attributeDialog.title" width="600px">
+			<attribute-group-setting ref="attributeGroupSetting"
+				:group-id="attributeDialog.groupId" 
+				:type="attributeDialog.type" 
+				:title="attributeDialog.title" />
+		</el-dialog>
+
         <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler" align="center">
 			<el-table-column type="selection" width="55" />
 
-			<el-table-column :show-overflow-tooltip="true" prop="name" label="分组名"/>
+			<el-table-column :show-overflow-tooltip="true" prop="name" label="分组名" width="100px"/>
 
-			<el-table-column :show-overflow-tooltip="true" prop="categoryName" label="所属分类" />
+			<el-table-column :show-overflow-tooltip="true" prop="categoryName" label="所属分类" width="100px"/>
 
 			<el-table-column :show-overflow-tooltip="true" prop="sort" label="排序"/>
+
+			<el-table-column label="属性配置" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-button size="mini" @click="showAttributeSetting(0, scope.row.id)">基本属性</el-button>
+					<el-button size="mini" @click="showAttributeSetting(1, scope.row.id)">销售属性</el-button>
+				</template>
+			</el-table-column>
 
 			<el-table-column :show-overflow-tooltip="true" prop="createTime" label="创建日期"/>
 
@@ -78,12 +93,13 @@
 	import CRUD, { presenter, header, form, crud } from '@crud/crud'
 	import crudProdAttrGroup from '@/api/product/attribute-group'
 	import { list as categoryList, tree as categoryTree } from '@/api/product/category'
+	import AttributeGroupSetting from '@/views/product/attribute-group/AttributeGroupSetting'
 
 	// crud交由presenter持有
 	const defaultForm = { id: null, name: '', sort: 99, categoryId: null }
 	export default {
 		name: 'ProductAttributeGroup',
-		components: { Treeselect, crudOperation, rrOperation, udOperation, DateRangePicker },
+		components: { Treeselect, crudOperation, rrOperation, udOperation, DateRangePicker, AttributeGroupSetting },
 		cruds() {
 			return CRUD({ title: '商品属性分组', url: 'api/product/attribute-group', crudMethod: { ...crudProdAttrGroup }})
 		},
@@ -105,16 +121,36 @@
 		          edit: ['admin', 'product-attribute-group:edit'],
 		          del: ['admin', 'product-attribute-group:del']
 		        },
+		        attributeDialog: {
+		        	show: false,
+		        	type: 0, // 0 - 基本属性，1-销售属性
+		        	groupId: 0,
+		        	title: "基本属性设置" 
+		        }
 			}
 		},
 		methods: {
 			loadCategories() {
 				categoryTree().then((data) => {
 					this.categories = data.data
-				})
+				}) 
 			},
 			[CRUD.HOOK.beforeSubmit]() {
 				// this.form.categoryId = this.form.categoryIds[this.form.categoryIds.length - 1]
+			},
+			showAttributeSetting (type, groupId) {
+				window.groupAtrributeSetting = {type, groupId}
+
+				this.attributeDialog.type = type 
+				this.attributeDialog.groupId = groupId
+				this.attributeDialog.title = type == 0 ? '基本属性设置': '销售属性设置' 
+
+				if(this.$refs.attributeGroupSetting) {
+					console.log('fresh')
+
+					this.$refs.attributeGroupSetting.resetData(type)
+				}
+				this.attributeDialog.show = true
 			}
 		},
 		mounted: function() {

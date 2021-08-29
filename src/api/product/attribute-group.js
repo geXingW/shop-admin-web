@@ -1,7 +1,6 @@
 import request from '@/utils/request'
 
 export function list(params) {
-  params = params || {pid : 0}
   return request({
     url: 'api/product/attribute-group',
     method: 'get',
@@ -33,4 +32,37 @@ export function edit(data) {
   })
 }
 
-export default { list, add, edit, del }
+export function getAttachAttributeList(params){
+  return request({
+    url: 'api/product/attribute-group/attach-attribute',
+    method: 'get',
+    params
+  })
+}
+
+export function detachAttributeList(params){
+  return request({
+    url: 'api/product/attribute-group/detach-attribute',
+    method: 'get',
+    params
+  })
+}
+
+export function attachAttributeToGroup(data) {
+  return request({
+    url: 'api/product/attribute-group/attach-attribute/' + data.groupId,
+    method: 'post',
+    data
+  })
+}
+
+export function detachAttributeToGroup(groupId, ids) {
+  return request({
+    url: 'api/product/attribute-group/attach-attribute/' + groupId,
+    method: 'delete',
+    data: ids
+  })
+}
+
+
+export default { list, add, edit, del, getAttachAttributeList, detachAttributeList, attachAttributeToGroup, detachAttributeToGroup }
