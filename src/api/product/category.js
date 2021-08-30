@@ -40,4 +40,13 @@ export function edit(data) {
   })
 }
 
-export default { add, edit, del, list, tree }
+export function groupAttributes(categoryId) {
+  let params = { categoryId }
+  return request({
+    url: 'api/product/category/attribute',
+    method: 'get',
+    params
+  })
+}
+
+export default { add, edit, del, list, tree, groupAttributes }

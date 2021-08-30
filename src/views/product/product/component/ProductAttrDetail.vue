@@ -15,7 +15,15 @@
           placeholder="选择商品分类"
           :normalizer="categoryNormalizer"
           :disable-branch-nodes="true"
+          @select="handleCategorySelect"
         />
+      </el-form-item>
+      <el-form-item label="销售属性">
+        
+      </el-form-item>
+
+      <el-form-item label="基本属性">
+        
       </el-form-item>
 
       <el-form-item style="text-align: center">
@@ -27,7 +35,7 @@
 </template>
 
 <script>
-  import { tree as categoryTree } from '@/api/product/category'
+  import { tree as categoryTree, groupAttributes } from '@/api/product/category'
   import Treeselect from '@riophae/vue-treeselect'
   import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
@@ -48,6 +56,7 @@
           value: 'id',
           label: 'name'
         },
+        categoryGroupAttributes: {},
         categoryNormalizer(node) {
           return {
             id: node.id,
@@ -65,6 +74,9 @@
     },
     created() {
       this.loadCategories()
+      if(this.value.categoryId) {
+        this.loadCategoryGroupAttribute(this.value.categoryId)
+      }
     },
     watch: {
     },
@@ -80,6 +92,19 @@
           this.categories = data
         })
       },
+      loadCategoryGroupAttribute(categoryId) {
+        groupAttributes(categoryId).then((res) => {
+          console.log(res)
+          if(res.status == 200000){
+            this.categoryGroupAttributes = res.data
+          }
+        })
+      },
+      handleCategorySelect(node) {
+        if(node.id) {
+          this.loadCategoryGroupAttribute(node.id)
+        }
+      }
     }
   }
 </script>
