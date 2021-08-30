@@ -3,11 +3,6 @@
     <el-form :model="value" ref="productAttrForm" label-width="120px" style="width: 720px" size="small">
 
       <el-form-item label="商品分类">
-<!--         <el-cascader
-          v-model="value.categoryId"
-          :options="categories"
-          :props="categoryProps">
-        </el-cascader> -->
         <treeselect
           v-model="value.categoryId"
           :options="categories"
@@ -74,9 +69,7 @@
     },
     created() {
       this.loadCategories()
-      if(this.value.categoryId) {
-        this.loadCategoryGroupAttribute(this.value.categoryId)
-      }
+      this.loadCategoryGroupAttribute(this.value.categoryId)
     },
     watch: {
     },
@@ -87,7 +80,11 @@
       handleNext() {
         this.$emit('nextStep')
       },
-      loadCategories() {
+      loadCategories(categoryId) {
+        if(!!categoryId) {
+          return
+        }
+
         categoryTree().then(({ data }) => {
           this.categories = data
         })
@@ -101,9 +98,7 @@
         })
       },
       handleCategorySelect(node) {
-        if(node.id) {
-          this.loadCategoryGroupAttribute(node.id)
-        }
+        this.loadCategoryGroupAttribute(node.id)
       }
     }
   }
