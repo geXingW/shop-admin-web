@@ -25,7 +25,7 @@
               <div v-for="(val, index) in attributeInputAddValues[attributeId].values" :key="index" style="display: inline-block">
               <el-checkbox :label="val" class="littleMarginRight" @change="updateVueComponents"/>
               <el-button type="text" class="largeMarginRight" @click="handleRmAttributeInputValue(attributeId, index, val)">删除
-                  </el-button>
+              </el-button>
               </div>
             </el-checkbox-group>
           </div>
@@ -38,12 +38,40 @@
             </el-checkbox-group>
           </div>
 
-          <!-- 生成属性列表 -->
-<!--           <el-table style="width: 100%;margin-top: 20px" :data="value.skuStockList" border>
-            <el-table-column label="">
-              
-            </el-table-column>
-          </el-table> -->
+        </div>
+
+        <!-- SKu 列表 -->
+        <div>
+            <el-table :data="value.skuList" border>
+              <el-table-column type="index" width="50" />
+
+              <el-table-column v-for="(item, index) in selectSkuNames"
+              :label="item" :key="index" align="center">
+                <template slot-scope="scope">
+                {{ scope.row[index].value || '未知' }}
+              </template>
+              </el-table-column>
+
+              <el-table-column label="价格" align="center">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.price" />
+                </template>
+              </el-table-column>
+
+              <el-table-column label="库存" align="center">
+                <template slot-scope="scope">
+                  <el-input v-model="scope.row.stock" />
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" align="center">
+                <template slot-scope="scope">
+                  <el-button type="danger" @click="rmSkuList(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+
+            </el-table>
+            <el-button @click="generateSkuList">生成sku列表</el-button>
 
         </div>
       </el-form-item>
@@ -66,6 +94,7 @@
   import { tree as categoryTree, groupAttributes } from '@/api/product/category'
   import Treeselect from '@riophae/vue-treeselect'
   import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+  import { cartesian } from '@/utils/helper'
 
   export default {
     name: "ProductAttrDetail",
@@ -80,21 +109,20 @@
     data() {
       return {
         categories: [],
-        categoryProps: {
-          value: 'id',
-          label: 'name'
-        },
-        categoryGroupAttributes: {},
+        categoryProps: { value: 'id', label: 'name'},
+        categoryGroupAttributes: {},  // 根据分类查询到的商品属性组积属性信息
         selectBaseAttributes: [],
         selectSaleAttributes: [],
         attributeInputAddValues: [],
+        selectSkuNames: [],
         categoryNormalizer(node) {
           return {
             id: node.id,
             label: node.name,
             children: node.children && node.children.length > 0 ? node.children : 0,
           }
-        }
+        },
+        skuList: { names: [], values: [], cartesians: [] }
       }
     },
     computed: {
@@ -169,6 +197,43 @@
         this.selectSaleAttributes[attributeId].values = selectValues.filter(val => val != value);
 
         this.updateVueComponents()  
+      },
+      generateSkuList() {
+        let skuNames = [], skuValues = [];
+
+        this.selectSaleAttributes.map( attribute => {
+          if(!attribute && !attribute.attributeName && !attribute.values) {
+            return
+          }
+
+          // 空列表会影响笛卡尔积计算，去除空列表
+          if(!Array.isArray(attribute.values) || attribute.values.length < 1 ) {
+            return
+          }
+
+          skuNames.push(attribute.attributeName)
+          skuValues.push(attribute.values.map(value => {
+            return { 
+              id: attribute.attributeId, 
+              name: attribute.attributeName,
+              value
+            }
+          }))
+
+        })
+
+        this.selectSkuNames = skuNames
+
+        let skuList = cartesian(skuValues)
+        if(skuNames.length <= 1) {
+          skuList = skuList.map(item => [item])
+        }        
+
+        console.log(skuList)
+        this.value.skuList = skuList 
+      },
+      rmSkuList(index) {
+        this.skuList.cartesians.splice(index, 1)
       },
       updateVueComponents() {
         this.$forceUpdate()

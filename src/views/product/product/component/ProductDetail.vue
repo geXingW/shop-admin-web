@@ -53,6 +53,7 @@
 		unit: '',
 		detailPCHtml: '',
 		detailMobileHtml: '',
+		skuList: [],
 	}
 
 	export default {
