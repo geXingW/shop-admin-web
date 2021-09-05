@@ -1,6 +1,6 @@
 <template>
   <div style="margin-top: 50px">
-    <el-form :model="value" ref="productAttrForm" label-width="120px" style="width: 720px" size="small">
+    <el-form :model="value" ref="productAttrForm" label-width="120px" style="width: 800px" size="small">
 
       <el-form-item label="商品分类">
         <treeselect
@@ -42,36 +42,67 @@
 
         <!-- SKu 列表 -->
         <div>
-            <el-table :data="value.skuList" border>
-              <el-table-column type="index" width="50" />
+            <el-table :data="value.skuList" border style="width: 100%">
+              <el-table-column type="index" width="45" align="center" label="序号"/>
 
               <el-table-column v-for="(item, index) in selectSkuNames"
-              :label="item" :key="index" align="center">
+                :label="item" 
+                :key="index" 
+                align="center" 
+                width="55"
+                :show-overflow-tooltip="true">
                 <template slot-scope="scope">
-                {{ scope.row[index].value || '未知' }}
-              </template>
-              </el-table-column>
-
-              <el-table-column label="价格" align="center">
-                <template slot-scope="scope">
-                  <el-input v-model="scope.row.price" />
+                  {{ scope.row.sku[index].value || '未知' }}
                 </template>
               </el-table-column>
 
-              <el-table-column label="库存" align="center">
+              <el-table-column label="价格" align="center" width="150">
                 <template slot-scope="scope">
-                  <el-input v-model="scope.row.stock" />
+                  <el-input-number v-model="scope.row.price" 
+                  :step="2" 
+                  :precision="2" 
+                  :min="0.01" 
+
+                  controls-position="right"/>
                 </template>
               </el-table-column>
 
-              <el-table-column label="操作" align="center">
+              <el-table-column label="原价" align="center" width="150">
                 <template slot-scope="scope">
-                  <el-button type="danger" @click="rmSkuList(scope.$index)">删除</el-button>
+                  <el-input-number v-model="scope.row.originPrice" 
+                  :step="2" 
+                  :precision="2" 
+                  :min="0.01" 
+                  controls-position="right" />
                 </template>
               </el-table-column>
 
+              <el-table-column label="库存" align="center" width="150">
+                <template slot-scope="scope">
+                  <el-input-number v-model="scope.row.stock" 
+                  :min="0" 
+                  :step="2" 
+                  controls-position="right" />
+                </template>
+              </el-table-column>
+
+              <el-table-column label="操作" align="center" width="45">
+                <template slot-scope="scope">
+                  <el-button type="text" @click="rmSkuList(scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
             </el-table>
-            <el-button @click="generateSkuList">生成sku列表</el-button>
+            <div style="margin-top: 20px">
+              <el-button type="primary" @click="generateSkuList">
+                生成sku列表
+              </el-button>
+              <el-button type="primary" @click="syncSkuStock" :disabled="skuListIsEmpty">
+                同步库存
+              </el-button>
+              <el-button type="primary" @click="syncSkuPrice" :disabled="skuListIsEmpty">
+                同步价格
+              </el-button>
+            </div>
 
         </div>
       </el-form-item>
@@ -130,6 +161,9 @@
       productId(){
         return this.value.id;
       },
+      skuListIsEmpty() {
+        return this.value.skuList.length <= 0
+      }
     },
     created() {
       this.loadCategories()
@@ -199,6 +233,15 @@
         this.updateVueComponents()  
       },
       generateSkuList() {
+        this.$confirm('刷新列表将导致sku信息重新生成，是否要刷新', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.doGenerateSkuList();
+        });
+      },
+      doGenerateSkuList() {
         let skuNames = [], skuValues = [];
 
         this.selectSaleAttributes.map( attribute => {
@@ -225,19 +268,70 @@
         this.selectSkuNames = skuNames
 
         let skuList = cartesian(skuValues)
-        if(skuNames.length <= 1) {
-          skuList = skuList.map(item => [item])
-        }        
+        skuList = skuList.map(item => {
+          if(skuNames.length <= 1) {
+            item = [item]
+          }
 
-        console.log(skuList)
+          return { price: 0, stock: 0, originPrice: 0, sku: item }
+        })
         this.value.skuList = skuList 
       },
+      syncSkuStock() {
+        if(this.value.skuList.length <= 1) {
+          return
+        }
+
+        this.$confirm('将同步第一个sku的库存到所有sku,是否继续', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.doSyncSkuStock()
+        })
+      },
+      doSyncSkuStock() {
+        let stock = this.value.skuList[0].stock
+
+        this.value.skuList = this.value.skuList.map((item, index) => {
+          if(index > 0) {
+            item = { ...item, stock }
+          }
+
+          return item
+        })
+      },
+      syncSkuPrice() {
+        if(this.value.skuList.length <= 1) {
+          return
+        }
+
+        this.$confirm('将同步第一个sku的价格到所有sku,是否继续', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.doSyncSkuPrice()
+        });
+      },
+      doSyncSkuPrice() {
+        let price = this.value.skuList[0].price
+        let originPrice = this.value.skuList[0].originPrice
+
+        this.value.skuList = this.value.skuList.map((item, index) => {
+          if(index > 0) {
+            item = { ...item, price, originPrice }
+          }
+          
+          return item
+        })
+      },
       rmSkuList(index) {
-        this.skuList.cartesians.splice(index, 1)
+        this.value.skuList.splice(index, 1)
       },
       updateVueComponents() {
         this.$forceUpdate()
-      }
+      },
     }
   }
 </script>
