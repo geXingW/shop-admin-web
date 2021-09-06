@@ -4,7 +4,7 @@
                @click=" dialogVisible=true" type="primary">上传图片
     </el-button>
     <el-dialog append-to-body :visible.sync="dialogVisible">
-      <el-upload class="editor-slide-upload"
+<!--       <el-upload class="editor-slide-upload"
                  action="http://macro-oss.oss-cn-shenzhen.aliyuncs.com"
                  :data="dataObj"
                  :multiple="true"
@@ -15,7 +15,22 @@
                  :on-success="handleSuccess"
                  :before-upload="beforeUpload">
         <el-button size="small" type="primary">点击上传</el-button>
+      </el-upload> -->
+
+      <el-upload class="editor-slide-upload"
+                 :action="commonUploadUrl"
+                 :data="picUploadParams"
+                 :headers="headers"
+                 :multiple="true"
+                 :file-list="fileList"
+                 :show-file-list="true"
+                 list-type="picture-card"
+                 :on-remove="handleRemove"
+                 :on-success="handleSuccess"
+                 :before-upload="beforeUpload">
+        <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>
+
       <el-button @click="dialogVisible = false">取 消</el-button>
       <el-button type="primary" @click="handleSubmit">确 定</el-button>
     </el-dialog>
@@ -24,10 +39,13 @@
 
 <script>
   // import {policy} from '@/api/oss'
+  import { mapGetters } from 'vuex'
+  import { getToken } from '@/utils/auth'
 
   export default {
     name: 'editorSlideUpload',
     props: {
+      params: Object,
       color: {
         type: String,
         default: '#1890ff'
@@ -35,6 +53,13 @@
     },
     data() {
       return {
+        headers: {
+          Authorization: getToken()
+        },
+        picUploadParams: {
+          uploadId: 0,
+          uploadType: 'multiple-editor-card'
+        },
         dialogVisible: false,
         listObj: {},
         fileList: [],
@@ -45,8 +70,14 @@
           ossaccessKeyId: '',
           dir: '',
           host: ''
-        }
+        },
+        useOss: false, 
       }
+    },
+    computed: {
+      ...mapGetters([
+        'commonUploadUrl'
+      ])
     },
     methods: {
       checkAllSuccess() {
@@ -65,14 +96,22 @@
         this.dialogVisible = false;
       },
       handleSuccess(response, file) {
+        console.log(response)
         const uid = file.uid;
         const objKeyArr = Object.keys(this.listObj)
         for (let i = 0, len = objKeyArr.length; i < len; i++) {
+
           if (this.listObj[objKeyArr[i]].uid === uid) {
-            this.listObj[objKeyArr[i]].url = this.dataObj.host + '/' + this.dataObj.dir + '/' + file.name;
+            if(!this.useOss && response.status == 200000){
+              this.listObj[objKeyArr[i]].url = response.data.url;
+            } else {
+              this.listObj[objKeyArr[i]].url = this.dataObj.host + '/' + this.dataObj.dir + '/' + file.name
+            }
+
             this.listObj[objKeyArr[i]].hasSuccess = true;
             return
           }
+
         }
       },
       handleRemove(file) {
@@ -88,22 +127,30 @@
       beforeUpload(file) {
         const _self = this
         const fileName = file.uid;
-        this.listObj[fileName] = {};
+        this.listObj[fileName] = {
+          url: '', 
+          hasSuccess: false, 
+          uid: fileName
+        }
+
+        if(!this.useOss) {
+          return true
+        }
+
         return new Promise((resolve, reject) => {
-          resolve(true)
-          // policy().then(response => {
-          //   _self.dataObj.policy = response.data.policy;
-          //   _self.dataObj.signature = response.data.signature;
-          //   _self.dataObj.ossaccessKeyId = response.data.accessKeyId;
-          //   _self.dataObj.key = response.data.dir + '/${filename}';
-          //   _self.dataObj.dir = response.data.dir;
-          //   _self.dataObj.host = response.data.host;
-          //   _self.listObj[fileName] = {hasSuccess: false, uid: file.uid, width: this.width, height: this.height};
-          //   resolve(true)
-          // }).catch(err => {
-          //   console.log(err)
-          //   reject(false)
-          // })
+          policy().then(response => {
+            _self.dataObj.policy = response.data.policy;
+            _self.dataObj.signature = response.data.signature;
+            _self.dataObj.ossaccessKeyId = response.data.accessKeyId;
+            _self.dataObj.key = response.data.dir + '/${filename}';
+            _self.dataObj.dir = response.data.dir;
+            _self.dataObj.host = response.data.host;
+            _self.listObj[fileName] = {hasSuccess: false, uid: file.uid, width: this.width, height: this.height};
+            resolve(true)
+          }).catch(err => {
+            console.log(err)
+            reject(false)
+          })
         })
       }
     }

@@ -4,7 +4,7 @@
 			<el-step title="填写商品信息"></el-step>
 			<el-step title="填写商品属性"></el-step>
 			<el-step title="填写商品促销"></el-step>
-			<el-step title="选择商品关联"></el-step>
+			<el-step title="选择关联活动"></el-step>
 		</el-steps>
 	    <product-info-detail
 	      v-show="showStatus[0]"
@@ -26,19 +26,21 @@
 	      @nextStep="nextStep"
 	      @prevStep="prevStep">
 	    </product-sale-detail>
-<!-- 	    <product-relation-detail
+	    <product-relation-detail
 	      v-show="showStatus[3]"
 	      v-model="productParam"
 	      :is-edit="isEdit"
 	      @prevStep="prevStep"
 	      @finishCommit="finishCommit">
-	    </product-relation-detail> -->
+	    </product-relation-detail>
 	</el-card>
 </template>
 <script>
 	import ProductInfoDetail from './ProductInfoDetail'
 	import ProductSaleDetail from './ProductSaleDetail'
 	import ProductAttrDetail from './ProductAttrDetail'
+	import ProductRelationDetail from './ProductRelationDetail'
+	import { add as createProduct, edit as editProduct } from '@/api/product/product'
 
 	const defaultProductParam = {
 		title: '',
@@ -47,6 +49,7 @@
 		sort: 0,
 		sale: 0,
 		price: 0,
+		originalPrice: 0,
 		promotionPrice: 0,
 		stock: 0,
 		lowStock: 0,
@@ -54,11 +57,13 @@
 		detailPCHtml: '',
 		detailMobileHtml: '',
 		skuList: [],
+		attributeList: [],
+		pics: [],
 	}
 
 	export default {
 		name: 'ProductDetail',
-		components: { ProductInfoDetail, ProductSaleDetail, ProductAttrDetail },
+		components: { ProductInfoDetail, ProductSaleDetail, ProductAttrDetail, ProductRelationDetail },
 		props: {
 			isEdit: {
 				type: Boolean,
@@ -71,6 +76,12 @@
 				showStatus: [true, false, false, false],
 				productParam: Object.assign({}, defaultProductParam),
 			}
+		},
+		computed: {
+	      //商品的编号
+	      productId(){
+	        return this.value.id;
+	      },
 		},
 		methods: {
 	      hideAll() {
@@ -92,13 +103,23 @@
 	          this.showStatus[this.step] = true;
 	        }
 	      },
+	      createProduct() {
+	      	return editProduct(this.productId, this.productParam)
+	      },
+	      editProduct() {
+	      	return createProduct(this.productParam)
+	      },
 		  finishCommit(isEdit) {
 	        this.$confirm('是否要提交该产品', '提示', {
 	          confirmButtonText: '确定',
 	          cancelButtonText: '取消',
 	          type: 'warning'
 	        }).then(() => {
-	          console.log("提交商品")
+	          console.log("提交商品", this.productParam)
+	        	let request = isEdit ? this.createProduct(): this.editProduct()
+	        	request.then(res => {
+	        		console.log(res)
+	        	})
 	        })
 	      }
 		}

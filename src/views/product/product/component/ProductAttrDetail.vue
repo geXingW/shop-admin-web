@@ -14,103 +14,114 @@
         />
       </el-form-item>
       <el-form-item label="销售属性" v-if="selectSaleAttributes">
-        <div v-for="(item, attributeId) in selectSaleAttributes" :key="attributeId">
-          <!-- 手动输入 -->
-          <div v-if="item && item.inputType == 0">
-            <span>{{ `${item.attributeName}：` }}</span>
-            <br>
-            <input v-model="attributeInputAddValues[attributeId].value">
-            <el-button class="littleMarginLeft" @click="handleAddAttributeInputValue(attributeId)">增加</el-button>
-            <el-checkbox-group v-model="selectSaleAttributes[attributeId].values" >
-              <div v-for="(val, index) in attributeInputAddValues[attributeId].values" :key="index" style="display: inline-block">
-              <el-checkbox :label="val" class="littleMarginRight" @change="updateVueComponents"/>
-              <el-button type="text" class="largeMarginRight" @click="handleRmAttributeInputValue(attributeId, index, val)">删除
-              </el-button>
-              </div>
-            </el-checkbox-group>
-          </div>
-
-          <!-- 选择输入 -->
-          <div v-if="item && item.inputType == 1">
-            <span>{{ `${item.attributeName}：` }}</span>
-            <el-checkbox-group v-model="selectSaleAttributes[attributeId].values" >
-              <el-checkbox :label="val" v-for="(val, index) in item.inputValue.split(',')"  :key="index" @change="updateVueComponents" />
-            </el-checkbox-group>
-          </div>
-
-        </div>
-
-        <!-- SKu 列表 -->
-        <div>
-            <el-table :data="value.skuList" border style="width: 100%">
-              <el-table-column type="index" width="45" align="center" label="序号"/>
-
-              <el-table-column v-for="(item, index) in selectSkuNames"
-                :label="item" 
-                :key="index" 
-                align="center" 
-                width="55"
-                :show-overflow-tooltip="true">
-                <template slot-scope="scope">
-                  {{ scope.row.sku[index].value || '未知' }}
-                </template>
-              </el-table-column>
-
-              <el-table-column label="价格" align="center" width="150">
-                <template slot-scope="scope">
-                  <el-input-number v-model="scope.row.price" 
-                  :step="2" 
-                  :precision="2" 
-                  :min="0.01" 
-
-                  controls-position="right"/>
-                </template>
-              </el-table-column>
-
-              <el-table-column label="原价" align="center" width="150">
-                <template slot-scope="scope">
-                  <el-input-number v-model="scope.row.originPrice" 
-                  :step="2" 
-                  :precision="2" 
-                  :min="0.01" 
-                  controls-position="right" />
-                </template>
-              </el-table-column>
-
-              <el-table-column label="库存" align="center" width="150">
-                <template slot-scope="scope">
-                  <el-input-number v-model="scope.row.stock" 
-                  :min="0" 
-                  :step="2" 
-                  controls-position="right" />
-                </template>
-              </el-table-column>
-
-              <el-table-column label="操作" align="center" width="45">
-                <template slot-scope="scope">
-                  <el-button type="text" @click="rmSkuList(scope.$index)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <div style="margin-top: 20px">
-              <el-button type="primary" @click="generateSkuList">
-                生成sku列表
-              </el-button>
-              <el-button type="primary" @click="syncSkuStock" :disabled="skuListIsEmpty">
-                同步库存
-              </el-button>
-              <el-button type="primary" @click="syncSkuPrice" :disabled="skuListIsEmpty">
-                同步价格
-              </el-button>
+        <el-card shadow="never" class="cardBg">
+          <div v-for="(item, attributeId) in selectSaleAttributes" :key="attributeId">
+            <!-- 手动输入 -->
+            <div v-if="item && item.inputType == 0">
+              <span>{{ `${item.attributeName}：` }}</span>
+              <br>
+              <input v-model="attributeInputAddValues[attributeId].value">
+              <el-button class="littleMarginLeft" @click="handleAddAttributeInputValue(attributeId)">增加</el-button>
+              <el-checkbox-group v-model="selectSaleAttributes[attributeId].values" >
+                <div v-for="(val, index) in attributeInputAddValues[attributeId].values" :key="index" style="display: inline-block">
+                <el-checkbox :label="val" class="littleMarginRight" @change="updateVueComponents"/>
+                <el-button type="text" class="largeMarginRight" @click="handleRmAttributeInputValue(attributeId, index, val)">删除
+                </el-button>
+                </div>
+              </el-checkbox-group>
             </div>
 
+            <!-- 选择输入 -->
+            <div v-if="item && item.inputType == 1">
+              <span>{{ `${item.attributeName}：` }}</span>
+              <el-checkbox-group v-model="selectSaleAttributes[attributeId].values" >
+                <el-checkbox :label="val" v-for="(val, index) in item.inputValue.split(',')"  :key="index" @change="updateVueComponents" />
+              </el-checkbox-group>
+            </div>
+          </div>
+        </el-card>
+
+        <!-- SKu 列表 -->
+        <el-table :data="value.skuList" border style="width: 100%;margin-top: 20px">
+          <el-table-column type="index" width="45" align="center" label="序号"/>
+
+          <el-table-column v-for="(item, index) in skuNames"
+            :label="item" 
+            :key="index" 
+            align="center" 
+            width="58"
+            :show-overflow-tooltip="true">
+            <template slot-scope="scope">
+              {{ scope.row.sku[index] ? scope.row.sku[index].value : '未知' }}
+            </template>
+          </el-table-column>
+
+          <el-table-column label="价格" align="center" width="150">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.price" 
+              :step="2" 
+              :precision="2" 
+              :min="0.01" 
+              controls-position="right"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="原价" align="center" width="150">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.originPrice" 
+              :step="2" 
+              :precision="2" 
+              :min="0.01" 
+              controls-position="right" />
+            </template>
+          </el-table-column>
+
+          <el-table-column label="库存" align="center" width="150">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.stock" 
+              :min="0" 
+              :step="2" 
+              controls-position="right" />
+            </template>
+          </el-table-column>
+
+          <el-table-column label="操作" align="center" width="45">
+            <template slot-scope="scope">
+              <el-button type="text" @click="rmSkuList(scope.$index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- SKU 列表操作按钮 -->
+        <div style="margin-top: 20px">
+          <el-button type="primary" @click="generateSkuList">
+            生成sku列表
+          </el-button>
+          <el-button type="primary" @click="syncSkuStock" :disabled="skuListIsEmpty">
+            同步库存
+          </el-button>
+          <el-button type="primary" @click="syncSkuPrice" :disabled="skuListIsEmpty">
+            同步价格
+          </el-button>
         </div>
+
       </el-form-item>
 
       <el-form-item label="基本属性">
-        <div v-for="(item, index) in categoryGroupAttributes.baseAttributes" :key="index">
-          {{ item.attributeName }}
-        </div>
+        <el-card shadow="never">
+          <div v-for="(item, index) in value.attributeList" :key="index">
+            <div class="paramInputLabel">{{ item.attributeName }}:</div>
+            <el-select v-if="item.inputType===1" class="paramInput" v-model="value.attributeList[index].value" @change="updateVueComponents">
+              <el-option
+                v-for="(value, i) in item.inputValue.split(',')"
+                :key="i"
+                :label="value"
+                :value="value" />
+            </el-select>
+            <el-input v-else class="paramInput" 
+              v-model="value.attributeList[index].value" 
+              @input="updateVueComponents" />
+          </div>
+        </el-card>
       </el-form-item>
 
       <el-form-item style="text-align: center">
@@ -141,11 +152,6 @@
       return {
         categories: [],
         categoryProps: { value: 'id', label: 'name'},
-        categoryGroupAttributes: {},  // 根据分类查询到的商品属性组积属性信息
-        selectBaseAttributes: [],
-        selectSaleAttributes: [],
-        attributeInputAddValues: [],
-        selectSkuNames: [],
         categoryNormalizer(node) {
           return {
             id: node.id,
@@ -153,7 +159,11 @@
             children: node.children && node.children.length > 0 ? node.children : 0,
           }
         },
-        skuList: { names: [], values: [], cartesians: [] }
+        skuList: { names: [], values: [], cartesians: [] },
+        categoryGroupAttributes: {}, // 根据分类查询到的商品属性组积属性信息
+        selectSaleAttributes: [], 
+        attributeInputAddValues: [], 
+        skuNames: [],
       }
     },
     computed: {
@@ -178,6 +188,12 @@
       handleNext() {
         this.$emit('nextStep')
       },
+      resetSkuData() {
+        this.value.skuList = []
+        this.selectSaleAttributes = []
+        this.categoryGroupAttributes = {}
+        this.skuNames = []
+      },
       loadCategories(categoryId) {
         categoryTree().then(({ data }) => {
           this.categories = data
@@ -187,15 +203,21 @@
         if(!categoryId) {
           return
         }
-
         groupAttributes(categoryId).then((res) => {
           if(res.status == 200000) {
+            this.resetSkuData()
+
             this.categoryGroupAttributes = res.data
 
             res.data.saleAttributes.map(item => {
+              // 销售属性
+              this.skuNames.push(item.attributeName)
               this.selectSaleAttributes[item.attributeId] = { values: [], ...item }
-
               this.attributeInputAddValues[item.attributeId] = { value: '', values: []}
+            })
+
+            this.value.attributeList = res.data.baseAttributes.map(item => {
+              return { ...item, value: '' }
             })
           }
         })
@@ -242,7 +264,7 @@
         });
       },
       doGenerateSkuList() {
-        let skuNames = [], skuValues = [];
+        let skuValues = [];
 
         this.selectSaleAttributes.map( attribute => {
           if(!attribute && !attribute.attributeName && !attribute.values) {
@@ -254,7 +276,6 @@
             return
           }
 
-          skuNames.push(attribute.attributeName)
           skuValues.push(attribute.values.map(value => {
             return { 
               id: attribute.attributeId, 
@@ -265,11 +286,9 @@
 
         })
 
-        this.selectSkuNames = skuNames
-
         let skuList = cartesian(skuValues)
         skuList = skuList.map(item => {
-          if(skuNames.length <= 1) {
+          if(this.skuNames.length <= 1) {
             item = [item]
           }
 

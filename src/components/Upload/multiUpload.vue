@@ -1,8 +1,24 @@
 <template> 
   <div>
-    <el-upload
+<!--     <el-upload
       :action="useOss?ossUploadUrl:minioUploadUrl"
       :data="useOss?dataObj:null"
+      list-type="picture-card"
+      :file-list="fileList"
+      :before-upload="beforeUpload"
+      :on-remove="handleRemove"
+      :on-success="handleUploadSuccess"
+      :on-preview="handlePreview"
+      :limit="maxCount"
+      :on-exceed="handleExceed"
+    >
+      <i class="el-icon-plus"></i>
+    </el-upload> -->
+
+    <el-upload
+      :action="action"
+      :data="params"
+      :headers="headers"
       list-type="picture-card"
       :file-list="fileList"
       :before-upload="beforeUpload"
@@ -20,23 +36,29 @@
   </div>
 </template>
 <script>
-  import {policy} from '@/api/oss'
+  // import {policy} from '@/api/oss'
+  import { getToken } from '@/utils/auth'
 
   export default {
     name: 'multiUpload',
     props: {
+      action: String,
+      params: Object,
       //图片属性数组
       value: Array,
       //最大上传图片数量
       maxCount:{
         type:Number,
         default:5
-      }
+      },
     },
     data() {
       return {
+        headers: {
+          Authorization: getToken()
+        },
         dataObj: {
-          policy: '',
+          // policy: '',
           signature: '',
           key: '',
           ossaccessKeyId: '',
@@ -45,7 +67,7 @@
         },
         dialogVisible: false,
         dialogImageUrl:null,
-        useOss:true, //使用oss->true;使用MinIO->false
+        useOss: false, //使用oss->true;使用MinIO->false
         ossUploadUrl:'http://macro-oss.oss-cn-shenzhen.aliyuncs.com',
         minioUploadUrl:'http://localhost:8080/minio/upload',
       };
@@ -57,7 +79,7 @@
           fileList.push({url:this.value[i]});
         }
         return fileList;
-      }
+      },
     },
     methods: {
       emitInput(fileList) {
@@ -79,7 +101,7 @@
         if(!this.useOss){
           //不使用oss不需要获取策略
           return true;
-        }
+        } 
         return new Promise((resolve, reject) => {
           policy().then(response => {
             _self.dataObj.policy = response.data.policy;
@@ -96,13 +118,9 @@
         })
       },
       handleUploadSuccess(res, file) {
-        let url = this.dataObj.host + '/' + this.dataObj.dir + '/' + file.name;
-        if(!this.useOss){
-          //不使用oss直接获取图片路径
-          url = res.data.url;
-        }
-        this.fileList.push({name: file.name,url:url});
-        this.emitInput(this.fileList);
+        let url = !this.useOss ? res.data.url : this.dataObj.host + '/' + this.dataObj.dir + '/' + file.name;
+        this.fileList.push({name: file.name,url:url})
+        this.emitInput(this.fileList)
       },
       handleExceed(files, fileList) {
         this.$message({
