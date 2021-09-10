@@ -2,44 +2,62 @@
   <div style="margin-top: 50px">
     <el-form :model="value" :rules="rules" ref="productInfoForm" label-width="120px" style="width: width: 720px" size="small" :inline="true">
       <el-form-item label="商品名称:" prop="title">
-        <el-input v-model="value.name" style="width:500px"/>
+        <el-input 
+        v-model="value.title" 
+        style="width:500px"
+        show-word-limit
+        :minlength="ruleParam.title.min"
+        :maxlength="ruleParam.title.max"/>
       </el-form-item>
 
       <el-form-item label="副标题：" prop="subTitle">
-        <el-input v-model="value.subTitle" style="width:500px"/></el-input>
+        <el-input 
+        v-model="value.subTitle" 
+        style="width:500px"
+        show-word-limit
+        :minlength="ruleParam.title.min"
+        :maxlength="ruleParam.subTitle.max"/>
       </el-form-item>
 
-      <el-form-item label="商品售价：" width="400">
-        <el-input-number v-model="value.price" 
+      <el-form-item label="商品售价：" width="400" prop="salePrice">
+        <el-input-number v-model="value.salePrice" 
         style="width:230px"
         :precision="2" 
         :step="1"
-        :min="1"/>
+        :min="ruleParam.price.min"
+        :max="ruleParam.price.max"/>
       </el-form-item>
-      <el-form-item label="市场价：">
+      <el-form-item label="市场价：" prop="originalPrice">
         <el-input-number v-model="value.originalPrice" 
         style="width:230px"
         :precision="2" 
         :step="1"
-        :min="1"/>
+        :min="ruleParam.price.min"
+        :max="ruleParam.price.max"/>
       </el-form-item>
-      <el-form-item label="商品库存：">
-        <el-input-number v-model="value.stock" 
+      <el-form-item label="商品库存：" prop="unit">
+        <el-input-number 
+        v-model="value.stock" 
         style="width:140px"
-        :min="1"/>
+        :min="ruleParam.stock.min"
+        :max="ruleParam.stock.max"/>
       </el-form-item>
-      <el-form-item label="计量单位：">
-        <el-input v-model="value.unit" style="width:80px" />
+      <el-form-item label="计量单位：" prop="unit">
+        <el-input 
+        v-model="value.unit" 
+        style="width:80px" 
+        :minlength="ruleParam.unit.min"
+        :maxlength="ruleParam.unit.max"/>
       </el-form-item>
-      <el-form-item label="排序：">
+      <el-form-item label="排序：" prop="sort">
         <el-input-number v-model="value.sort"
         style="width:105px"
         :step="1"
         :min="1"/>
       </el-form-item>
 
-      <el-form-item label="商品图片：">
-        <multi-upload v-model="value.pics" :action="commonUploadUrl" :params="picUploadParams"/>
+      <el-form-item label="商品图片：" prop="pics">
+        <multi-upload v-model="value.pics" :action="commonUploadUrl" :params="picUploadParams" :maxCount="ruleParam.pics.max"/>
       </el-form-item>
 
       <el-form-item label="规格参数：">
@@ -64,6 +82,16 @@
   import Tinymce from '@/components/Tinymce'
   import MultiUpload from '@/components/Upload/multiUpload'
   import { mapGetters } from 'vuex'
+  import { strErrMsg, numErrMsg } from '@/utils/validate'
+
+  const ruleParam=  {
+    title: {min: 5, max: 50},
+    subTitle: {min: 5, max: 100},
+    price: {min: 0.01, max: 10000000.00},
+    stock: {min: 0, max: 100000},
+    unit: {min: 1, max: 5},
+    pics: {min:1, max: 5},
+  }
 
   export default {
     name: "ProductInfoDetail",
@@ -77,8 +105,73 @@
     },
     data() {
       return {
+        ruleParam,
         rules: {
-
+          title: [
+            {
+              required: true, 
+              min: ruleParam.title.min, 
+              max: ruleParam.title.max, 
+              message: strErrMsg(ruleParam.title.min, ruleParam.title.max, '商品名称'), 
+              trigger: 'blur'
+            },
+          ],
+          subTitle: [
+            {
+              required: true, 
+              min: ruleParam.subTitle.min, 
+              max: ruleParam.subTitle.max, 
+              message: strErrMsg(ruleParam.subTitle.min, ruleParam.subTitle.max, '副标题'),
+              trigger: 'blur'
+            }
+          ],
+          salePrice: [
+            {
+              required: true, 
+              min: ruleParam.price.min, 
+              max: ruleParam.price.max, 
+              type: 'number',
+              message: `请输入${ruleParam.price.min} - ${ruleParam.price.min}的商品售价`, 
+              message: numErrMsg(ruleParam.price.min, ruleParam.price.max, '售价'),
+              trigger: 'blur'
+            }
+          ],
+          originalPrice: [
+            {
+              required: true, 
+              min: ruleParam.price.min, 
+              max: ruleParam.price.max, 
+              type: 'number',
+              message: numErrMsg(ruleParam.price.min, ruleParam.price.max, '市场价'),
+              trigger: 'blur'
+            }
+          ],
+          stock: [
+            {
+              required: true,
+              min: ruleParam.stock.min,
+              max: ruleParam.stock.max,
+              type: 'number',
+              message: numErrMsg(ruleParam.stock.min, ruleParam.stock.max, '库存'),
+              trigger: 'blur'
+            }
+          ],
+          unit: [
+            {
+              required: true,
+              min: ruleParam.unit.min,
+              max: ruleParam.unit.max,
+              message: strErrMsg(ruleParam.unit.min, ruleParam.unit.max, '计量单位'),
+              trigger: 'blur'
+            }
+          ],
+          pics: [
+            {
+              required: true,
+              min: ruleParam.pics.min,
+              max: ruleParam.pics.max,
+            }
+          ]
         },
         //商品富文本详情激活类型
         activeHtmlName: 'pc',
@@ -106,18 +199,22 @@
     },
     methods: {
       handleNext(formName){
+        // if(){ // 至少上传一张图片
+        //   return false;
+        // }
+
         this.$refs[formName].validate((valid) => {
           if (valid) {
             this.$emit('nextStep');
           } else {
             this.$message({
-              message: '验证失败',
+              message: '请检查所填信息',
               type: 'error',
               duration:1000
             });
             return false;
           }
-        });
+        })
       },
     }
   }

@@ -48,7 +48,7 @@
 		categoryId: null,
 		sort: 0,
 		sale: 0,
-		price: 0,
+		salePrice: 0,
 		originalPrice: 0,
 		promotionPrice: 0,
 		stock: 0,
@@ -59,6 +59,9 @@
 		skuList: [],
 		attributeList: [],
 		pics: [],
+		onSale: 0,	// 是否上架
+		isNew: 0, // 是否是新品
+		
 	}
 
 	export default {

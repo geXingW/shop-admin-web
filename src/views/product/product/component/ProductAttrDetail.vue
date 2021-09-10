@@ -1,8 +1,8 @@
 <template>
   <div style="margin-top: 50px">
-    <el-form :model="value" ref="productAttrForm" label-width="120px" style="width: 800px" size="small">
+    <el-form :model="value" :rules="rules" ref="productAttrForm" label-width="120px" style="width: 800px" size="small">
 
-      <el-form-item label="商品分类">
+      <el-form-item label="商品分类" prop="categoryId">
         <treeselect
           v-model="value.categoryId"
           :options="categories"
@@ -108,7 +108,7 @@
 
       <el-form-item label="基本属性">
         <el-card shadow="never">
-          <div v-for="(item, index) in value.attributeList" :key="index">
+          <div v-for="(item, index) in baseAttributes" :key="index">
             <div class="paramInputLabel">{{ item.attributeName }}:</div>
             <el-select v-if="item.inputType===1" class="paramInput" v-model="value.attributeList[index].value" @change="updateVueComponents">
               <el-option
@@ -126,7 +126,9 @@
 
       <el-form-item style="text-align: center">
         <el-button size="medium" @click="handlePrev">上一步，填写商品信息</el-button>
-        <el-button type="primary" size="medium" @click="handleNext">下一步，填写商品促销</el-button>
+        <el-button type="primary" size="medium" @click="handleNext('productAttrForm')">
+        下一步，填写商品促销
+      </el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -137,6 +139,10 @@
   import Treeselect from '@riophae/vue-treeselect'
   import '@riophae/vue-treeselect/dist/vue-treeselect.css'
   import { cartesian } from '@/utils/helper'
+
+  const ruleParam=  {
+    categoryId: {min: 1},
+  }
 
   export default {
     name: "ProductAttrDetail",
@@ -150,6 +156,16 @@
     },
     data() {
       return {
+        rules: {
+          categoryId: [
+            {
+              required: true, 
+              type: 'number', 
+              min: ruleParam.categoryId.min,
+              message: '请选择商品分类'
+            }
+          ]
+        },
         categories: [],
         categoryProps: { value: 'id', label: 'name'},
         categoryNormalizer(node) {
@@ -160,7 +176,7 @@
           }
         },
         skuList: { names: [], values: [], cartesians: [] },
-        categoryGroupAttributes: {}, // 根据分类查询到的商品属性组积属性信息
+        baseAttributes: [], // 根据分类查询到的商品属性组积属性信息
         selectSaleAttributes: [], 
         attributeInputAddValues: [], 
         skuNames: [],
@@ -185,14 +201,29 @@
       handlePrev() {
         this.$emit('prevStep')
       },
-      handleNext() {
-        this.$emit('nextStep')
+      handleNext(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            this.$emit('nextStep');
+          } else {
+            this.$message({
+              message: '请检查所填信息',
+              type: 'error',
+              duration:1000
+            });
+            return false;
+          }
+        })
       },
       resetSkuData() {
         this.value.skuList = []
         this.selectSaleAttributes = []
         this.categoryGroupAttributes = {}
         this.skuNames = []
+      },
+      resetAttributeData() {
+        this.baseAttributes = []
+        this.value.attributeList = []
       },
       loadCategories(categoryId) {
         categoryTree().then(({ data }) => {
@@ -206,6 +237,7 @@
         groupAttributes(categoryId).then((res) => {
           if(res.status == 200000) {
             this.resetSkuData()
+            this.resetAttributeData()
 
             this.categoryGroupAttributes = res.data
 
@@ -216,9 +248,12 @@
               this.attributeInputAddValues[item.attributeId] = { value: '', values: []}
             })
 
-            this.value.attributeList = res.data.baseAttributes.map(item => {
-              return { ...item, value: '' }
-            })
+            res.data.baseAttributes.map(item => {
+              this.baseAttributes.push(item)
+              this.value.attributeList.push({
+                id: item.attributeId, name: item.attributeName, value: ''
+              })
+            })            
           }
         })
       },
@@ -261,7 +296,8 @@
           type: 'warning'
         }).then(() => {
           this.doGenerateSkuList();
-        });
+        })
+        .catch(_ => {})
       },
       doGenerateSkuList() {
         let skuValues = [];
@@ -308,6 +344,7 @@
         }).then(() => {
           this.doSyncSkuStock()
         })
+        .catch( _ => {})
       },
       doSyncSkuStock() {
         let stock = this.value.skuList[0].stock
@@ -331,7 +368,8 @@
           type: 'warning'
         }).then(() => {
           this.doSyncSkuPrice()
-        });
+        })
+        .catch(_ => {})
       },
       doSyncSkuPrice() {
         let price = this.value.skuList[0].price

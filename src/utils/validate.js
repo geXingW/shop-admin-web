@@ -166,3 +166,22 @@ export function validateIdNo(rule, value, callback) {
   }
 }
 
+export function strErrMsg(min, max, fieldName) {
+  console.log(min, max, fieldName)
+  return `请输入${min} - ${max}个字符的${fieldName}`
+}
+
+export function numErrMsg(min, max, fieldName) {
+  let msg = '请输入'
+  if(isNaN(min)) {
+    return `请输入不大于${max}的${fieldName}`
+  }
+
+  if(isNaN(max)){
+    return `请输入不小于${min}的${fieldName}`
+  }
+
+  if(!isNaN(min) && !isNaN(max)) {
+    return `请输入${min} - ${max}的${fieldName}`
+  }
+}
