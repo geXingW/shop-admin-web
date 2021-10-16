@@ -93,6 +93,24 @@
     pics: {min:1, max: 5},
   }
 
+  const picValidator = function(rule, value, callback) {
+    // 校验图片数组
+    if(!(value instanceof Array)){
+      callback(new Error("请上传商品图！"))
+    }
+
+    // 校验长度
+    if(value.length <= 0){
+      callback(new Error("至少上传1张商品图！"))
+    }
+
+    if(value.length >10) {
+     callback(new Error("单个商品最多上传5张图片！")) 
+    }
+
+    callback()
+  }
+
   export default {
     name: "ProductInfoDetail",
     components: { Tinymce, MultiUpload },
@@ -167,9 +185,7 @@
           ],
           pics: [
             {
-              required: true,
-              min: ruleParam.pics.min,
-              max: ruleParam.pics.max,
+              required: true, validator: picValidator
             }
           ]
         },

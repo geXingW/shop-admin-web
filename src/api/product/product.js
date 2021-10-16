@@ -7,6 +7,12 @@ export function list() {
   })
 }
 
+export function show(id) {
+  return request({
+    url: `api/product/${id}`
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/product',
@@ -23,9 +29,9 @@ export function del(ids) {
   })
 }
 
-export function edit(data) {
+export function edit(id, data) {
   return request({
-    url: 'api/product',
+    url: `api/product/${id}`,
     method: 'put',
     data
   })

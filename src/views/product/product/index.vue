@@ -51,7 +51,33 @@
             <date-range-picker v-model="query.createTime" class="date-item" />
             <rrOperation />
           </div>
-          <crudOperation show="" :permission="permission" />
+          <crudOperation show="" :permission="permission">
+            <!-- 添加商品 -->
+            <el-button
+              slot="left"
+              v-permission="permission.add"
+              class="filter-item"
+              size="mini"
+              type="primary"
+              icon="el-icon-plus"
+              @click="toAdd"
+            >
+              新增
+            </el-button>
+
+            <!-- 添加商品 -->
+            <el-button
+              v-permission="permission.edit"
+              class="filter-item"
+              size="mini"
+              type="success"
+              icon="el-icon-edit"
+              :disabled="crud.selections.length !== 1"
+              @click="toEdit(crud.selections[0])"
+            >
+              修改
+            </el-button>
+          </crudOperation>
         </div>
         <!--表单渲染-->
         <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
@@ -194,7 +220,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column :show-overflow-tooltip="true" prop="createTime" width="150" label="创建日期" />
+          <el-table-column :show-overflow-tooltip="true" prop="updateTime" width="150" label="更新日期" />
 
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
@@ -250,11 +276,13 @@ const defaultForm = {
   unit: '',
   keywords: ''
 }
+
+const optShow = {add: false, edit: false, del: true, download: true, reset: true }
 export default {
   name: 'Product',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker, SingleUpload },
   cruds() {
-    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...crudProduct }})
+    return CRUD({ title: '商品', url: 'api/product', crudMethod: { ...crudProduct }, optShow })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
@@ -323,6 +351,15 @@ export default {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
       this.loadCategories()
+    },
+    [CRUD.HOOK.beforeToEdit](crud, form) {
+      this.toEdit(form.id)
+    },
+    toAdd() {
+      this.$router.push('/product/add')
+    },
+    toEdit(id) {
+      this.$router.push(`/product/edit/${id}`)
     },
     loadCategories() { // 获取商品分类
       const that = this

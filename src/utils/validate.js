@@ -167,7 +167,6 @@ export function validateIdNo(rule, value, callback) {
 }
 
 export function strErrMsg(min, max, fieldName) {
-  console.log(min, max, fieldName)
   return `请输入${min} - ${max}个字符的${fieldName}`
 }
 

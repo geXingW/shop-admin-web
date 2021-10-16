@@ -40,7 +40,7 @@
 	import ProductSaleDetail from './ProductSaleDetail'
 	import ProductAttrDetail from './ProductAttrDetail'
 	import ProductRelationDetail from './ProductRelationDetail'
-	import { add as createProduct, edit as editProduct } from '@/api/product/product'
+	import { add as createProduct, edit as editProduct, show as showProduct } from '@/api/product/product'
 
 	const defaultProductParam = {
 		title: '',
@@ -61,7 +61,6 @@
 		pics: [],
 		onSale: 0,	// 是否上架
 		isNew: 0, // 是否是新品
-		
 	}
 
 	export default {
@@ -80,10 +79,17 @@
 				productParam: Object.assign({}, defaultProductParam),
 			}
 		},
+		created() {
+			if(this.isEdit) {
+				showProduct(this.productId).then((data) => {
+					this.productParam = data.data
+				})
+			}
+		},
 		computed: {
 	      //商品的编号
 	      productId(){
-	        return this.value.id;
+	        return this.$route.params.id;
 	      },
 		},
 		methods: {
@@ -110,7 +116,7 @@
 	      	return editProduct(this.productId, this.productParam)
 	      },
 	      editProduct() {
-	      	return createProduct(this.productParam)
+	      	return editProduct(this.productId, this.productParam)
 	      },
 		  finishCommit(isEdit) {
 	        this.$confirm('是否要提交该产品', '提示', {
@@ -120,8 +126,11 @@
 	        }).then(() => {
 	          console.log("提交商品", this.productParam)
 	        	let request = isEdit ? this.createProduct(): this.editProduct()
-	        	request.then(res => {
-	        		console.log(res)
+	        	request.then((data) => {
+					this.$notify({
+			          title: data.message,
+			          type: 'success'
+			        });
 	        	})
 	        })
 	      }

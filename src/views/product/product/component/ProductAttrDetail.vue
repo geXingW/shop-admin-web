@@ -85,6 +85,15 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="预警库存" align="center" width="150">
+            <template slot-scope="scope">
+              <el-input-number v-model="scope.row.low_stock" 
+              :min="0" 
+              :step="2" 
+              controls-position="right" />
+            </template>
+          </el-table-column>
+
           <el-table-column label="操作" align="center" width="45">
             <template slot-scope="scope">
               <el-button type="text" @click="rmSkuList(scope.$index)">删除</el-button>
@@ -193,9 +202,13 @@
     },
     created() {
       this.loadCategories()
-      this.loadCategoryGroupAttribute(this.value.categoryId)
     },
     watch: {
+      "value.categoryId": function(newVal, oldVal) {
+        if(oldVal == null && newVal != null) {
+          this.loadCategoryGroupAttribute(this.value.categoryId, true)  
+        }
+      }
     },
     methods: {
       handlePrev() {
@@ -216,21 +229,21 @@
         })
       },
       resetSkuData() {
-        this.value.skuList = []
+        // this.value.skuList = []
         this.selectSaleAttributes = []
         this.categoryGroupAttributes = {}
         this.skuNames = []
       },
       resetAttributeData() {
         this.baseAttributes = []
-        this.value.attributeList = []
+        // this.value.attributeList = []
       },
       loadCategories(categoryId) {
         categoryTree().then(({ data }) => {
           this.categories = data
         })
       },
-      loadCategoryGroupAttribute(categoryId) {
+      loadCategoryGroupAttribute(categoryId, isCreated) {
         if(!categoryId) {
           return
         }
@@ -250,15 +263,18 @@
 
             res.data.baseAttributes.map(item => {
               this.baseAttributes.push(item)
-              this.value.attributeList.push({
-                id: item.attributeId, name: item.attributeName, value: ''
-              })
-            })            
+              if(!isCreated) {
+                this.value.attributeList.push({
+                  id: item.attributeId, name: item.attributeName, value: ''
+                })
+              }
+            })     
           }
         })
       },
       handleCategorySelect(node) {
         this.loadCategoryGroupAttribute(node.id)
+        this.value.attributeList = []
       },
       handleAddAttributeInputValue(attributeId) {
         let {value, values} = this.attributeInputAddValues[attributeId]
@@ -328,7 +344,7 @@
             item = [item]
           }
 
-          return { price: 0, stock: 0, originPrice: 0, sku: item }
+          return { price: 0, stock: 0, low_stock: 0, originPrice: 0, sku: item }
         })
         this.value.skuList = skuList 
       },
