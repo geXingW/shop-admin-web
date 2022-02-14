@@ -48,8 +48,8 @@
                 :value="item.key"
               />
             </el-select>
-            <date-range-picker v-model="query.createTime" class="date-item" />
-            <rrOperation />
+            <date-range-picker v-model="query.createTime" class="date-item"/>
+            <rrOperation/>
           </div>
           <crudOperation show="" :permission="permission">
             <!-- 添加商品 -->
@@ -80,8 +80,9 @@
           </crudOperation>
         </div>
         <!--表单渲染-->
-        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
-        :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
+        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU"
+                   :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px"
+        >
           <el-form
             ref="form"
             :inline="true"
@@ -100,21 +101,25 @@
               <el-input-number v-model.number="form.price" :min="0" controls-position="right" style="width: 150px;"/>
             </el-form-item>
             <el-form-item label="原价" prop="original_price">
-              <el-input-number v-model.number="form.originalPrice" :min="0" controls-position="right" style="width: 150px;"/>
+              <el-input-number v-model.number="form.originalPrice" :min="0" controls-position="right"
+                               style="width: 150px;"
+              />
             </el-form-item>
             <el-form-item label="库存" prop="original_price">
-              <el-input-number v-model.number="form.stock" :min="0" :max="999" controls-position="right" style="width: 150px;" />
+              <el-input-number v-model.number="form.stock" :min="0" :max="999" controls-position="right"
+                               style="width: 150px;"
+              />
             </el-form-item>
             <el-form-item label="预警库存" prop="original_price">
-              <el-input-number v-model.number="form.lowStock" :min="0" controls-position="right" style="width: 150px;" />
+              <el-input-number v-model.number="form.lowStock" :min="0" controls-position="right" style="width: 150px;"/>
             </el-form-item>
-            <el-form-item label="上架"  style="width: 231px">
+            <el-form-item label="上架" style="width: 231px">
               <el-radio-group v-model="form.onSale">
                 <el-radio
                   v-for="item in dict.product_sale_status"
                   :key="item.id"
                   :label="item.value"
-                  >{{ item.label}}
+                >{{ item.label }}
                 </el-radio>
               </el-radio-group>
             </el-form-item>
@@ -151,7 +156,7 @@
                 :normalizer="treeNormalizer"
               />
             </el-form-item>
-            <br />
+            <br/>
             <el-form-item label="商品图片">
               <single-upload v-model="form.pic" :action="commonUploadUrl" :params="picUploadParams"></single-upload>
             </el-form-item>
@@ -162,12 +167,14 @@
           </div>
         </el-dialog>
         <!--表格渲染-->
-        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
-          <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名" />
+        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;"
+                  @selection-change="crud.selectionChangeHandler"
+        >
+          <el-table-column :selectable="checkboxT" type="selection" width="55"/>
+          <el-table-column :show-overflow-tooltip="true" prop="title" label="商品名"/>
           <!-- 图片 -->
           <el-table-column label="图片" width="100">
-            <template slot-scope="scope"><img :src="scope.row.pic" width="100px" /></template>
+            <template slot-scope="scope"><img :src="scope.row.pic" width="100px"/></template>
           </el-table-column>
           <!-- 价格 -->
           <el-table-column label="价格" width="80">
@@ -177,9 +184,11 @@
             </template>
           </el-table-column>
           <!-- 品牌 -->
-          <el-table-column label="品牌" width="80"><template>小米</template></el-table-column>
+          <el-table-column label="品牌" width="80">
+            <template>小米</template>
+          </el-table-column>
           <!-- 分类 -->
-          <el-table-column label="分类" width="80"><template>手机</template></el-table-column>
+          <el-table-column label="分类" width="80" prop="categoryName"/>
 
           <el-table-column label="上架" align="center" prop="onSale" width="70px">
             <template slot-scope="scope">
@@ -220,7 +229,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column :show-overflow-tooltip="true" prop="updateTime" width="150" label="更新日期" />
+          <el-table-column :show-overflow-tooltip="true" prop="updateTime" width="150" label="更新日期"/>
 
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
@@ -239,7 +248,7 @@
           </el-table-column>
         </el-table>
         <!--分页组件-->
-        <pagination />
+        <pagination/>
       </el-col>
     </el-row>
   </div>
@@ -257,19 +266,21 @@ import Treeselect from '@riophae/vue-treeselect'
 import { mapGetters } from 'vuex'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
-import crudProductCategory from "@/api/product/category"
-import crudProduct from "@/api/product/product"
+import crudProductCategory from '@/api/product/category'
+import crudProduct from '@/api/product/product'
 import SingleUpload from '@/components/Upload/singleUpload'
-const defaultForm = { 
-  id: null, 
-  title: null, 
-  subTitle: null, 
-  price: 0, 
-  originalPrice: 0, 
+import { changeSaleStatus } from '../../../api/product/product'
+
+const defaultForm = {
+  id: null,
+  title: null,
+  subTitle: null,
+  price: 0,
+  originalPrice: 0,
   onSale: '1',
   isNew: '0',
-  isRecommend: '0', 
-  categoryId: 0, 
+  isRecommend: '0',
+  categoryId: 0,
   pic: null,
   stock: 0,
   lowStock: 0,
@@ -277,7 +288,7 @@ const defaultForm = {
   keywords: ''
 }
 
-const optShow = {add: false, edit: false, del: true, download: true, reset: true }
+const optShow = { add: false, edit: false, del: true, download: true, reset: true }
 export default {
   name: 'Product',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker, SingleUpload },
@@ -297,7 +308,7 @@ export default {
         return {
           id: node.id,
           label: node.name,
-          children: node.children && node.children.length > 0 ? node.children : 0,
+          children: node.children && node.children.length > 0 ? node.children : 0
         }
       },
       permission: {
@@ -340,7 +351,8 @@ export default {
       'commonUploadUrl'
     ])
   },
-  created() {},
+  created() {
+  },
   mounted: function() {
     const that = this
     window.onresize = function temp() {
@@ -364,10 +376,10 @@ export default {
     loadCategories() { // 获取商品分类
       const that = this
       crudProductCategory.tree().then(({ data }) => {
-        if(data.length > 0){
-         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: true, children: data}]
-        }else {
-         this.categories = [ {id: 0, name: '顶级分类', icon: '', hasChildren: false}]
+        if (data.length > 0) {
+          this.categories = [{ id: 0, name: '顶级分类', icon: '', hasChildren: true, children: data }]
+        } else {
+          this.categories = [{ id: 0, name: '顶级分类', icon: '', hasChildren: false }]
         }
       })
     },
@@ -380,7 +392,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        curdProduct.edit(data).then(res => {
+        curdProduct.changeSaleStatus(data.id, { onSale: data.onSale }).then(res => {
           this.crud.notify(this.dict.label.product_sale_status[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
         }).catch(() => {
           data.onSale = !data.onSale
@@ -418,13 +430,13 @@ export default {
       }).catch(() => {
         data.onSale = !data.onSale
       })
-    },
+    }
   }
 }
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
-  ::v-deep .vue-treeselect__control,::v-deep .vue-treeselect__placeholder,::v-deep .vue-treeselect__single-value {
-    height: 30px;
-    line-height: 30px;
-  }
+::v-deep .vue-treeselect__control, ::v-deep .vue-treeselect__placeholder, ::v-deep .vue-treeselect__single-value {
+  height: 30px;
+  line-height: 30px;
+}
 </style>

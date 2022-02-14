@@ -1,4 +1,4 @@
-<template> 
+<template>
   <product-detail :is-edit='false'></product-detail>
 </template>
 <script>

@@ -61,7 +61,7 @@
             :normalizer="treeNormalizer"
           />
         </el-form-item>
-        
+
         <el-form-item label="关键字" prop="keywords">
           <el-input v-model="form.keywords" placeholder="关键字" style="width: 400px" />
         </el-form-item>
@@ -98,7 +98,7 @@
       <el-table-column
         :show-overflow-tooltip="true"
         label="名称"
-        width="125px"
+        width="300px"
         prop="name"
       />
       <!-- 图标 -->
@@ -109,14 +109,14 @@
         prop="icon"
       >
         <template slot-scope="scope">
-          <img :src="scope.row.icon" width="50px"> 
+          <img :src="scope.row.icon" width="50px">
         </template>
       </el-table-column>
 
       <el-table-column
         :show-overflow-tooltip="true"
         label="排序"
-        width="125px"
+        width="50px"
         prop="sort"
       />
       <el-table-column label="显示" align="center" prop="showStatus">
@@ -135,10 +135,10 @@
       <el-table-column
         :show-overflow-tooltip="true"
         label="关键字"
-        width="125px"
+        width="300px"
         prop="keywords"
       />
-      <el-table-column prop="createTime" label="创建日期" width="135px" />
+      <el-table-column prop="createTime" label="创建日期" width="180px" />
       <el-table-column
         v-if="checkPer(['admin', 'menu:edit', 'menu:del'])"
         label="操作"
@@ -199,6 +199,7 @@ export default {
       title: "商品分类",
       url: "api/product/category",
       crudMethod: { ...crudProductCategory },
+      sort: ['sort,asc'],
     })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],

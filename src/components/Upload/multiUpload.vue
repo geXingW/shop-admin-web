@@ -101,7 +101,7 @@
         if(!this.useOss){
           //不使用oss不需要获取策略
           return true;
-        } 
+        }
         return new Promise((resolve, reject) => {
           policy().then(response => {
             _self.dataObj.policy = response.data.policy;
@@ -119,7 +119,7 @@
       },
       handleUploadSuccess(res, file) {
         let url = !this.useOss ? res.data.url : this.dataObj.host + '/' + this.dataObj.dir + '/' + file.name;
-        this.fileList.push({name: file.name,url:url})
+        this.fileList.push({name: file.name, url:url, path: res.data.path})
         this.emitInput(this.fileList)
       },
       handleExceed(files, fileList) {

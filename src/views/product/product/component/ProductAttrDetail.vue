@@ -46,9 +46,9 @@
           <el-table-column type="index" width="45" align="center" label="序号"/>
 
           <el-table-column v-for="(item, index) in skuNames"
-            :label="item" 
-            :key="index" 
-            align="center" 
+            :label="item"
+            :key="index"
+            align="center"
             width="58"
             :show-overflow-tooltip="true">
             <template slot-scope="scope">
@@ -58,38 +58,38 @@
 
           <el-table-column label="价格" align="center" width="150">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.price" 
-              :step="2" 
-              :precision="2" 
-              :min="0.01" 
+              <el-input-number v-model="scope.row.price"
+              :step="2"
+              :precision="2"
+              :min="0.01"
               controls-position="right"/>
             </template>
           </el-table-column>
 
           <el-table-column label="原价" align="center" width="150">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.originPrice" 
-              :step="2" 
-              :precision="2" 
-              :min="0.01" 
+              <el-input-number v-model="scope.row.originPrice"
+              :step="2"
+              :precision="2"
+              :min="0.01"
               controls-position="right" />
             </template>
           </el-table-column>
 
           <el-table-column label="库存" align="center" width="150">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.stock" 
-              :min="0" 
-              :step="2" 
+              <el-input-number v-model="scope.row.stock"
+              :min="0"
+              :step="2"
               controls-position="right" />
             </template>
           </el-table-column>
 
           <el-table-column label="预警库存" align="center" width="150">
             <template slot-scope="scope">
-              <el-input-number v-model="scope.row.low_stock" 
-              :min="0" 
-              :step="2" 
+              <el-input-number v-model="scope.row.lowStock"
+              :min="0"
+              :step="2"
               controls-position="right" />
             </template>
           </el-table-column>
@@ -119,15 +119,16 @@
         <el-card shadow="never">
           <div v-for="(item, index) in baseAttributes" :key="index">
             <div class="paramInputLabel">{{ item.attributeName }}:</div>
-            <el-select v-if="item.inputType===1" class="paramInput" v-model="value.attributeList[index].value" @change="updateVueComponents">
+            <el-select v-if="item.inputType===1" class="paramInput"
+                       v-model="value.attributeList[index].value" @change="updateVueComponents">
               <el-option
                 v-for="(value, i) in item.inputValue.split(',')"
                 :key="i"
                 :label="value"
                 :value="value" />
             </el-select>
-            <el-input v-else class="paramInput" 
-              v-model="value.attributeList[index].value" 
+            <el-input v-else class="paramInput"
+              v-model="value.attributeList[index].value"
               @input="updateVueComponents" />
           </div>
         </el-card>
@@ -157,7 +158,12 @@
     name: "ProductAttrDetail",
     components: { Treeselect },
     props: {
-      value: Object,
+      value: {
+        type: Object,
+        default(){
+          return {}
+        }
+      },
       isEdit: {
         type: Boolean,
         default: false
@@ -168,8 +174,8 @@
         rules: {
           categoryId: [
             {
-              required: true, 
-              type: 'number', 
+              required: true,
+              type: 'number',
               min: ruleParam.categoryId.min,
               message: '请选择商品分类'
             }
@@ -186,8 +192,8 @@
         },
         skuList: { names: [], values: [], cartesians: [] },
         baseAttributes: [], // 根据分类查询到的商品属性组积属性信息
-        selectSaleAttributes: [], 
-        attributeInputAddValues: [], 
+        selectSaleAttributes: [],
+        attributeInputAddValues: [],
         skuNames: [],
       }
     },
@@ -206,7 +212,7 @@
     watch: {
       "value.categoryId": function(newVal, oldVal) {
         if(oldVal == null && newVal != null) {
-          this.loadCategoryGroupAttribute(this.value.categoryId, true)  
+          this.loadCategoryGroupAttribute(this.value.categoryId, true)
         }
       }
     },
@@ -263,12 +269,14 @@
 
             res.data.baseAttributes.map(item => {
               this.baseAttributes.push(item)
-              if(!isCreated) {
+
+              let index = this.value.attributeList.findIndex(_item => item.attributeId === _item.id)
+              if(index === -1) {
                 this.value.attributeList.push({
                   id: item.attributeId, name: item.attributeName, value: ''
                 })
               }
-            })     
+            })
           }
         })
       },
@@ -286,7 +294,7 @@
 
         if(values.includes(value)){
           this.$message({ message: '属性值已存在', type: 'warning', duration: 1000 });
-          return 
+          return
         }
 
         values.push(value)
@@ -303,7 +311,7 @@
         let selectValues = this.selectSaleAttributes[attributeId].values
         this.selectSaleAttributes[attributeId].values = selectValues.filter(val => val != value);
 
-        this.updateVueComponents()  
+        this.updateVueComponents()
       },
       generateSkuList() {
         this.$confirm('刷新列表将导致sku信息重新生成，是否要刷新', '提示', {
@@ -329,8 +337,8 @@
           }
 
           skuValues.push(attribute.values.map(value => {
-            return { 
-              id: attribute.attributeId, 
+            return {
+              id: attribute.attributeId,
               name: attribute.attributeName,
               value
             }
@@ -344,9 +352,9 @@
             item = [item]
           }
 
-          return { price: 0, stock: 0, low_stock: 0, originPrice: 0, sku: item }
+          return { price: 0, stock: 0, lowStock: 0, originPrice: 0, sku: item }
         })
-        this.value.skuList = skuList 
+        this.value.skuList = skuList
       },
       syncSkuStock() {
         if(this.value.skuList.length <= 1) {
@@ -395,7 +403,7 @@
           if(index > 0) {
             item = { ...item, price, originPrice }
           }
-          
+
           return item
         })
       },

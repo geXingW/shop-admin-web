@@ -60,10 +60,10 @@
         <el-form-item label="结束时间" prop="endTime">
           <date-picker v-model="form.endTime" type="datetime" class="date-item" />
         </el-form-item>
-        <el-form-item label="商品图片">
+        <el-form-item label="图片">
           <single-upload v-model="form.pic" :action="commonUploadUrl" :params="uploadParams"></single-upload>
         </el-form-item>
-        
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -208,7 +208,8 @@ export default {
       },
       uploadParams: {
         uploadId: 0,
-        uploadType: 'banner'
+        uploadType: 'images',
+        uploadModule: 'banner'
       }
     }
   },

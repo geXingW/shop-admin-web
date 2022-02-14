@@ -37,4 +37,12 @@ export function edit(id, data) {
   })
 }
 
-export default { add, edit, del, list }
+export function changeSaleStatus(id, data) {
+  return request({
+    url: `api/product/change-sale-status/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+export default { add, edit, del, list, changeSaleStatus }
