@@ -17,14 +17,15 @@
               @keyup.enter.native="crud.toQuery"
             />
 
-            <date-range-picker v-model="query.createTime" class="date-item" />
-            <rrOperation />
+            <date-range-picker v-model="query.createTime" class="date-item"/>
+            <rrOperation/>
           </div>
-          <crudOperation show="" :permission="permission" />
+          <crudOperation show="" :permission="permission"/>
         </div>
         <!--表单渲染-->
-        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" 
-        :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
+        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU"
+                   :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px"
+        >
           <el-form
             ref="form"
             :inline="true"
@@ -44,8 +45,10 @@
           </div>
         </el-dialog>
         <!--表格渲染-->
-        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;" @selection-change="crud.selectionChangeHandler">
-          <el-table-column :selectable="checkboxT" type="selection" width="55" />
+        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 150%;"
+                  @selection-change="crud.selectionChangeHandler"
+        >
+          <el-table-column :selectable="checkboxT" type="selection" width="55"/>
           <el-table-column prop="id" label="订单编号" align="center"/>
           <el-table-column prop="memberId" label="下单人" align="center"/>
 
@@ -90,7 +93,7 @@
           </el-table-column>
         </el-table>
         <!--分页组件-->
-        <pagination />
+        <pagination/>
       </el-col>
     </el-row>
   </div>
@@ -108,15 +111,15 @@ import Treeselect from '@riophae/vue-treeselect'
 import { mapGetters } from 'vuex'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
-const defaultForm = { 
-  id: null, 
+const defaultForm = {
+  id: null
 }
 const optShow = { add: false, edit: true, del: true, download: true, reset: true }
 export default {
   name: 'OrderList',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker },
   cruds() {
-    return CRUD({ title: '订单', url: 'api/order', crudMethod: { ...curdOrder }, optShow})
+    return CRUD({ title: '订单', url: 'api/order', crudMethod: { ...curdOrder }, optShow })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
@@ -139,10 +142,11 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'user',
+      'user'
     ])
   },
-  created() {},
+  created() {
+  },
   mounted: function() {
     const that = this
     window.onresize = function temp() {
@@ -153,6 +157,10 @@ export default {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
     },
+    [CRUD.HOOK.beforeToEdit](data, row) {
+      this.$router.push(`/order/detail/${row.id}`)
+      return false
+    },
     checkboxT(row, rowIndex) {
       return row.id !== this.user.id
     },
@@ -161,8 +169,8 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-  ::v-deep .vue-treeselect__control,::v-deep .vue-treeselect__placeholder,::v-deep .vue-treeselect__single-value {
-    height: 30px;
-    line-height: 30px;
-  }
+::v-deep .vue-treeselect__control, ::v-deep .vue-treeselect__placeholder, ::v-deep .vue-treeselect__single-value {
+  height: 30px;
+  line-height: 30px;
+}
 </style>

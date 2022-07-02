@@ -7,6 +7,13 @@ export function list() {
   })
 }
 
+export function info(id){
+  return request({
+    url: 'api/order/' + id,
+    method: 'get'
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/order',

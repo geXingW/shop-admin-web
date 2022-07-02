@@ -33,9 +33,9 @@ service.interceptors.response.use(
     if (response.data && response.data.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
       return response.data
     }
-    const data = response.data || { status: 200000 }
+    const data = response.data || { status: 200000, success: true }
 
-    if (data.status === 401000) {
+    if (data.status === 401001) {
       Notification.error({
         title: data.message,
         duration: 5000
@@ -44,7 +44,7 @@ service.interceptors.response.use(
       return router.push({ path: '/login' })
     }
 
-    if (data.status !== 200000) {
+    if (!data.success) {
       Notification.error({
         title: data.message,
         duration: 5000
@@ -52,6 +52,7 @@ service.interceptors.response.use(
 
       return Promise.reject(response)
     }
+
     return response.data
   },
   error => {
@@ -79,7 +80,7 @@ service.interceptors.response.use(
           return Promise.reject(error)
         }
       }
-      console.log(code)
+      
       if (code) {
         if (code === 401) {
           store.dispatch('LogOut').then(() => {

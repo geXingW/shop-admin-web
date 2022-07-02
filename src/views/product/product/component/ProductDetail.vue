@@ -62,6 +62,7 @@ const defaultProductParam = {
   detailPCHtml: '',
   detailMobileHtml: '',
   skuList: [],
+  skuOptions: [],
   attributeList: [],
   pics: [],
   onSale: 0,	// 是否上架
@@ -86,7 +87,7 @@ export default {
   },
   created() {
     if (this.isEdit) {
-      showProduct(this.productId).then(({data}) => {
+      showProduct(this.productId).then(({ data }) => {
         this.productParam = data
         this.productParam.pics = data.albumPics
         this.productParam.attributeList = data.attributeList
@@ -140,7 +141,7 @@ export default {
             type: 'success'
           })
 
-          this.$router.push("/product/list")
+          this.$router.push('/product/list')
         })
       })
     }

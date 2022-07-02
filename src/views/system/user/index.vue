@@ -38,7 +38,7 @@
               class="filter-item"
               @keyup.enter.native="crud.toQuery"
             />
-            <date-range-picker v-model="query.createTime" class="date-item" />
+            <date-range-picker v-model="query.createTime" class="date-item"/>
             <el-select
               v-model="query.enabled"
               clearable
@@ -55,24 +55,26 @@
                 :value="item.key"
               />
             </el-select>
-            <rrOperation />
+            <rrOperation/>
           </div>
-          <crudOperation show="" :permission="permission" />
+          <crudOperation show="" :permission="permission"/>
         </div>
         <!--表单渲染-->
-        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px">
+        <el-dialog append-to-body :close-on-click-modal="false" :before-close="crud.cancelCU"
+                   :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="570px"
+        >
           <el-form ref="form" :inline="true" :model="form" :rules="rules" size="small" label-width="66px">
             <el-form-item label="用户名" prop="username">
-              <el-input v-model="form.username" />
+              <el-input v-model="form.username"/>
             </el-form-item>
             <el-form-item label="电话" prop="phone">
-              <el-input v-model.number="form.phone" />
+              <el-input v-model.number="form.phone"/>
             </el-form-item>
             <el-form-item label="昵称" prop="nickName">
-              <el-input v-model="form.nickName" />
+              <el-input v-model="form.nickName"/>
             </el-form-item>
             <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" />
+              <el-input v-model="form.email"/>
             </el-form-item>
             <el-form-item label="部门" prop="dept.id">
               <treeselect
@@ -112,7 +114,8 @@
                   v-for="item in dict.user_status"
                   :key="item.id"
                   :label="item.value"
-                >{{ item.label }}</el-radio>
+                >{{ item.label }}
+                </el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item style="margin-bottom: 0;" label="角色" prop="roles">
@@ -140,17 +143,19 @@
           </div>
         </el-dialog>
         <!--表格渲染-->
-        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
-          <el-table-column :selectable="checkboxT" type="selection" width="55" />
-          <el-table-column :show-overflow-tooltip="true" prop="username" label="用户名" />
-          <el-table-column :show-overflow-tooltip="true" prop="nickName" label="昵称" />
+        <el-table ref="table" v-loading="crud.loading" :data="crud.data" style="width: 100%;"
+                  @selection-change="crud.selectionChangeHandler"
+        >
+          <el-table-column :selectable="checkboxT" type="selection" width="55"/>
+          <el-table-column :show-overflow-tooltip="true" prop="username" label="用户名"/>
+          <el-table-column :show-overflow-tooltip="true" prop="nickName" label="昵称"/>
           <el-table-column prop="gender" label="性别">
             <template slot-scope="scope">
-              {{ scope.row.gender == "F" ? "女": "男" }}
+              {{ scope.row.gender == 'F' ? '女' : '男' }}
             </template>
           </el-table-column>
-          <el-table-column :show-overflow-tooltip="true" prop="phone" width="100" label="电话" />
-          <el-table-column :show-overflow-tooltip="true" width="135" prop="email" label="邮箱" />
+          <el-table-column :show-overflow-tooltip="true" prop="phone" width="100" label="电话"/>
+          <el-table-column :show-overflow-tooltip="true" width="135" prop="email" label="邮箱"/>
           <el-table-column :show-overflow-tooltip="true" prop="dept" label="部门">
             <template slot-scope="scope">
               <div>{{ scope.row.dept.name }}</div>
@@ -167,7 +172,7 @@
               />
             </template>
           </el-table-column>
-          <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期" />
+          <el-table-column :show-overflow-tooltip="true" prop="createTime" width="135" label="创建日期"/>
           <el-table-column
             v-if="checkPer(['admin','user:edit','user:del'])"
             label="操作"
@@ -185,7 +190,7 @@
           </el-table-column>
         </el-table>
         <!--分页组件-->
-        <pagination />
+        <pagination/>
       </el-col>
     </el-row>
   </div>
@@ -207,14 +212,18 @@ import Treeselect from '@riophae/vue-treeselect'
 import { mapGetters } from 'vuex'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
+
 let userRoles = []
 let userJobs = []
-const defaultForm = { id: null, username: null, nickName: null, gender: 'M', email: null, enabled: 'false', roles: [], jobs: [], dept: { id: null }, phone: null }
+const defaultForm = {
+  id: null, username: null, nickName: null, gender: 'M', email: null, enabled: 'false', roles: [],
+  jobs: [], dept: { id: null }, phone: null
+}
 export default {
   name: 'User',
   components: { Treeselect, crudOperation, rrOperation, udOperation, pagination, DateRangePicker },
   cruds() {
-    return CRUD({ title: '用户', url: 'api/admin', crudMethod: { ...curdAdmin }})
+    return CRUD({ title: '用户', url: 'api/admin', crudMethod: { ...curdAdmin } })
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 数据字典
@@ -318,18 +327,20 @@ export default {
     },
     // 初始化编辑时候的角色与岗位
     [CRUD.HOOK.beforeToEdit](crud, form) {
+
+      console.log(form)
       this.getJobs(this.form.dept.id)
       this.jobDatas = []
       this.roleDatas = []
       userRoles = []
       userJobs = []
       const _this = this
-      form.roles.forEach(function(role, index) {
+      this.roles.forEach(function(role, index) {
         _this.roleDatas.push(role.id)
         const rol = { id: role.id }
         userRoles.push(rol)
       })
-      form.jobs.forEach(function(job, index) {
+      this.jobs.forEach(function(job, index) {
         _this.jobDatas.push(job.id)
         const data = { id: job.id }
         userJobs.push(data)
@@ -453,20 +464,23 @@ export default {
     getRoles() {
       getAll().then(({ data }) => {
         this.roles = data.records
-      }).catch(() => { })
+      }).catch(() => {
+      })
     },
     // 获取弹窗内岗位数据
     getJobs() {
       getAllJob().then(({ data }) => {
         this.jobs = data.records
-      }).catch(() => { })
+      }).catch(() => {
+      })
     },
     // 获取权限级别
     getRoleLevel() {
       getLevel().then(({ data: level }) => {
         console.log(level)
         this.level = level
-      }).catch(() => { })
+      }).catch(() => {
+      })
     },
     checkboxT(row, rowIndex) {
       return row.id !== this.user.id
@@ -476,8 +490,8 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-  ::v-deep .vue-treeselect__control,::v-deep .vue-treeselect__placeholder,::v-deep .vue-treeselect__single-value {
-    height: 30px;
-    line-height: 30px;
-  }
+::v-deep .vue-treeselect__control, ::v-deep .vue-treeselect__placeholder, ::v-deep .vue-treeselect__single-value {
+  height: 30px;
+  line-height: 30px;
+}
 </style>
